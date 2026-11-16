@@ -33,6 +33,11 @@ class AudioRecorder {
             AudioFormat.ENCODING_PCM_16BIT,
             minBuffer * 2,
         )
+        if (recorder.state != AudioRecord.STATE_INITIALIZED) {
+            recorder.release()
+            recording.set(false)
+            error("Não foi possível inicializar o microfone.")
+        }
         recorder.startRecording()
         recordThread = thread(name = "lsb-recorder", isDaemon = true) {
             val buffer = ShortArray(minBuffer)

@@ -98,8 +98,19 @@ class TeacherEditViewModel(
     fun stopRecording() {
         val content = _state.value.content ?: return
         viewModelScope.launch {
+            val temp = File(repository.contentDirectory(content.id), "recording-${System.currentTimeMillis()}.wav")
             try {
-                val recorded = recorder.stopToFile(workingAudio(content))
+                val recorded = recorder.stopToFile(temp)
+                if (recorded.pcm16k.isEmpty()) {
+                    temp.delete()
+                    _state.update {
+                        it.copy(
+                            recording = false,
+                            error = "A gravação está vazia. Toque em Gravar, fale para o microfone e depois em Parar gravação.",
+                        )
+                    }
+                    return@launch
+                }
                 val relative = repository.saveAudio(content.id, recorded.file)
                 val updated = currentContent().copy(
                     audioRelativePath = relative,
@@ -107,18 +118,28 @@ class TeacherEditViewModel(
                     syncStatus = SyncStatus.NONE,
                 )
                 repository.save(updated)
-                player.load(recorded.file)
+                val stored = repository.audioFile(updated)
+                    ?: error("O áudio foi gravado, mas não ficou disponível para reprodução.")
+                player.load(stored)
                 _state.update {
                     it.copy(
                         content = updated,
                         recording = false,
                         hasAudio = true,
+                        error = null,
                         savedMessage = "Narração gravada.",
                     )
                 }
             } catch (error: Exception) {
                 recorder.cancel()
-                _state.update { it.copy(recording = false, error = error.message) }
+                _state.update {
+                    it.copy(
+                        recording = false,
+                        error = friendlyAudioError(error),
+                    )
+                }
+            } finally {
+                if (temp.exists()) temp.delete()
             }
         }
     }
@@ -126,9 +147,9 @@ class TeacherEditViewModel(
     fun importAudio(uri: Uri) {
         val content = _state.value.content ?: return
         viewModelScope.launch {
+            val temp = File(repository.contentDirectory(content.id), "import-${System.currentTimeMillis()}.wav")
             try {
-                val dest = workingAudio(content)
-                val imported = importer.importToWav(uri, dest)
+                val imported = importer.importToWav(uri, temp)
                 val relative = repository.saveAudio(content.id, imported.file)
                 val updated = currentContent().copy(
                     audioRelativePath = relative,
@@ -136,12 +157,16 @@ class TeacherEditViewModel(
                     syncStatus = SyncStatus.NONE,
                 )
                 repository.save(updated)
-                player.load(imported.file)
+                val stored = repository.audioFile(updated)
+                    ?: error("O áudio foi importado, mas não ficou disponível para reprodução.")
+                player.load(stored)
                 _state.update {
                     it.copy(content = updated, hasAudio = true, savedMessage = "Áudio importado.", error = null)
                 }
             } catch (error: Exception) {
-                _state.update { it.copy(error = "Falha na importação: ${error.message}") }
+                _state.update { it.copy(error = "Falha na importação: ${friendlyAudioError(error)}") }
+            } finally {
+                if (temp.exists()) temp.delete()
             }
         }
     }
@@ -234,7 +259,7 @@ class TeacherEditViewModel(
                     it.copy(
                         content = failed,
                         syncing = false,
-                        error = error.message ?: "Falha na sincronização local.",
+                        error = friendlyAudioError(error),
                         syncMessage = null,
                     )
                 }
@@ -284,6 +309,15 @@ class TeacherEditViewModel(
 
     private fun workingAudio(content: ReadingContent): File {
         return File(repository.contentDirectory(content.id), ContentRepository.AUDIO_FILE)
+    }
+
+    private fun friendlyAudioError(error: Throwable): String {
+        val details = error.message.orEmpty()
+        return when {
+            details.contains("ENOENT") || details.contains("No such file", ignoreCase = true) ->
+                "Não foi possível guardar ou abrir o áudio. Tente gravar outra vez."
+            else -> error.message ?: "Ocorreu um erro ao tratar o áudio."
+        }
     }
 
     override fun onCleared() {

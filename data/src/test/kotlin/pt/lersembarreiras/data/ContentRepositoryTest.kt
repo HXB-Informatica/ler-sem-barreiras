@@ -3,6 +3,7 @@ package pt.lersembarreiras.data
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import java.io.File
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -54,5 +55,31 @@ class ContentRepositoryTest {
         val pkg = ContentPackageMapper.decode(ContentPackageMapper.encode(loaded))
         assertEquals("lersembarreiras-content", pkg.format)
         assertTrue(pkg.words.all { it.isTimed })
+    }
+
+    @Test
+    fun saveAudioDoesNotDeleteWhenSourceIsTheDestination() = runBlocking {
+        val created = repository.createDraft("Áudio", "Um dois.")
+        val dest = File(repository.contentDirectory(created.id), ContentRepository.AUDIO_FILE)
+        dest.writeBytes(byteArrayOf(82, 73, 70, 70, 0, 0, 0, 0))
+        val relative = repository.saveAudio(created.id, dest)
+        assertEquals("contents/${created.id}/audio.wav", relative)
+        assertTrue(dest.exists())
+        assertTrue(dest.length() > 0)
+    }
+
+    @Test
+    fun saveAudioCopiesFromTemporaryFile() {
+        runBlocking {
+            val created = repository.createDraft("Cópia", "Um dois.")
+            val temp = File.createTempFile("rec", ".wav")
+            temp.writeBytes(ByteArray(64) { 1 })
+            val relative = repository.saveAudio(created.id, temp)
+            val stored = File(repository.contentDirectory(created.id), ContentRepository.AUDIO_FILE)
+            assertEquals("contents/${created.id}/audio.wav", relative)
+            assertTrue(stored.exists())
+            assertEquals(64, stored.length())
+            temp.delete()
+        }
     }
 }

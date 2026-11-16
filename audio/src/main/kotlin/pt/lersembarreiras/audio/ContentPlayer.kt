@@ -1,7 +1,9 @@
 package pt.lersembarreiras.audio
 
 import android.content.Context
+import android.net.Uri
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import java.io.File
@@ -20,7 +22,8 @@ class ContentPlayer(context: Context) {
     val isPlaying: Boolean get() = player.isPlaying
 
     fun load(file: File) {
-        player.setMediaItem(MediaItem.fromUri(file.toURI().toString()))
+        require(file.exists()) { "O ficheiro de áudio ainda não existe neste tablet." }
+        player.setMediaItem(MediaItem.fromUri(Uri.fromFile(file)))
         player.prepare()
         player.playWhenReady = false
     }
@@ -54,6 +57,10 @@ class ContentPlayer(context: Context) {
             }
 
             override fun onPlaybackStateChanged(playbackState: Int) {
+                trySend(snapshot())
+            }
+
+            override fun onPlayerError(error: PlaybackException) {
                 trySend(snapshot())
             }
         }

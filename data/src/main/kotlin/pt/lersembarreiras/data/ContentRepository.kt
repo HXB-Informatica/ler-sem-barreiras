@@ -44,10 +44,14 @@ class ContentRepository(
     }
 
     suspend fun saveAudio(contentId: String, source: File): String = withContext(Dispatchers.IO) {
+        require(source.exists()) { "O ficheiro de áudio de origem não existe." }
         val dir = directoryFor(contentId)
-        dir.mkdirs()
+        check(dir.exists() || dir.mkdirs()) { "Não foi possível criar a pasta do conteúdo." }
         val dest = File(dir, AUDIO_FILE)
-        source.copyTo(dest, overwrite = true)
+        if (source.canonicalFile != dest.canonicalFile) {
+            source.copyTo(dest, overwrite = true)
+        }
+        check(dest.exists()) { "O áudio não ficou guardado neste tablet." }
         relativeAudioPath(contentId)
     }
 
@@ -80,8 +84,9 @@ class ContentRepository(
     private fun relativeAudioPath(id: String): String = "contents/$id/$AUDIO_FILE"
 
     private fun writeExportablePackage(content: ReadingContent) {
-        val file = File(directoryFor(content.id), PACKAGE_FILE)
-        file.writeText(ContentPackageMapper.encode(content))
+        val dir = directoryFor(content.id)
+        dir.mkdirs()
+        File(dir, PACKAGE_FILE).writeText(ContentPackageMapper.encode(content))
     }
 
     companion object {
