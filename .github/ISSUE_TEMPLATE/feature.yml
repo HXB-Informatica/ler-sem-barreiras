@@ -1,0 +1,26 @@
+name: Melhoria
+description: Propor uma melhoria ou nova funcionalidade.
+title: "[melhoria] "
+labels: ["melhoria"]
+body:
+  - type: textarea
+    id: problema
+    attributes:
+      label: Necessidade educativa ou técnica
+    validations:
+      required: true
+  - type: textarea
+    id: proposta
+    attributes:
+      label: Proposta
+    validations:
+      required: true
+  - type: checkboxes
+    id: offline
+    attributes:
+      label: Princípios
+      options:
+        - label: A proposta funciona sem internet e sem serviços externos.
+          required: true
+        - label: A proposta não recolhe dados de alunos.
+          required: true

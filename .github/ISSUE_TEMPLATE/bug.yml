@@ -1,0 +1,36 @@
+name: Defeito
+description: Reportar um problema na aplicação ou na compilação.
+title: "[defeito] "
+labels: ["defeito"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Não inclua nomes de alunos, gravações reais, dados pessoais ou ficheiros de assinatura.
+  - type: textarea
+    id: descricao
+    attributes:
+      label: O que aconteceu
+      description: Descreva o comportamento observado.
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: O que era esperado
+    validations:
+      required: true
+  - type: input
+    id: dispositivo
+    attributes:
+      label: Dispositivo e versão de Android
+      placeholder: HOTWAV TAB R9 Plus, Android 14
+  - type: dropdown
+    id: modo
+    attributes:
+      label: Modo
+      options:
+        - Professor
+        - Aluno
+        - Compilação / CI
+        - Outro

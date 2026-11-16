@@ -1,0 +1,54 @@
+# Gradle
+.gradle/
+build/
+**/build/
+local.properties
+*.iml
+.idea/
+captures/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+
+# Native / third-party fetch (obtained at build time, not versioned)
+speech/src/main/cpp/third_party/whisper.cpp/
+**/src/main/assets/models/*.bin
+**/src/main/assets/models/*.gguf
+
+# NDK
+.externalNativeBuild/
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Keystores and signing
+*.jks
+*.keystore
+keystore.properties
+*.pepk
+
+# Logs and personal data
+*.log
+*.orig
+recordings/
+student-data/
+*.wav
+*.mp3
+*.m4a
+*.aac
+*.ogg
+!**/src/test/**/*.wav
+!**/src/test/resources/**
+
+# Secrets
+.env
+.env.*
+google-services.json
+
+# Kotlin
+.kotlin/
