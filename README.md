@@ -53,16 +53,27 @@ O objetivo do motor não é substituir o texto do professor: é estimar *quando*
 - Equipamento de referência: **HOTWAV TAB R9 Plus** (Android 14, Unisoc T7280, 8 GB de RAM física, ecrã 11'', 1920 × 1200).
 - Microfone, para gravação no Modo Professor.
 
-## Instalação do APK de teste
+## Descarregar e instalar a aplicação
 
-Ainda não existe uma publicação assinada de produção. O APK de depuração é gerado pelo GitHub Actions e pode ser instalado para testes internos.
+A forma prevista de obter a aplicação é a página de [GitHub Releases](https://github.com/HXB-Informatica/ler-sem-barreiras/releases). Qualquer pessoa pode descarregar o APK, **sem conta GitHub** e sem compilar o código.
 
-1. Abra a ação **Android CI** no GitHub e descarregue o artefacto `ler-sem-barreiras-debug`.
-2. No tablet, permita a instalação a partir da origem escolhida.
-3. Instale o APK e abra **Ler sem Barreiras**.
-4. Confirme que o tablet pode ficar em modo avião: criação, gravação, sincronização e leitura continuam a funcionar.
+**Versão atual de testes:** [Ler sem Barreiras v0.1.0 Beta](https://github.com/HXB-Informatica/ler-sem-barreiras/releases/tag/v0.1.0-beta)
 
-Compilação local:
+Esta versão é **experimental**. Destina-se a testes técnicos, não a utilização pedagógica em produção. O APK está assinado com a chave de depuração do Android; uma assinatura de produção será configurada mais tarde, através de GitHub Secrets, sem nunca versionar chaves privadas.
+
+### Instalação num tablet Android
+
+1. Abra a [página de Releases](https://github.com/HXB-Informatica/ler-sem-barreiras/releases) no tablet ou noutro computador.
+2. Descarregue `ler-sem-barreiras-v0.1.0-beta.apk` (ou a versão mais recente publicada).
+3. Se o Android bloquear a instalação, permita instalações a partir do navegador ou do gestor de ficheiros usado para o descarregamento.
+4. Abra o APK, instale e inicie **Ler sem Barreiras**.
+5. Opcional: confira o ficheiro `.sha256` publicado na mesma Release.
+
+Depois de instalada, a aplicação funciona **integralmente offline**, inclusive em modo avião: criação de conteúdos, gravação, sincronização local e leitura não precisam de Internet.
+
+O equipamento de referência para validação é o **HOTWAV TAB R9 Plus** (Android 14). Nesta beta, a sincronização nesse tablet ainda não foi validada em equipamento físico.
+
+Compilação local, se preferir gerar o APK no seu computador:
 
 ```bash
 ./gradlew :app:assembleDebug

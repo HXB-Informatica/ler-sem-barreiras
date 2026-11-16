@@ -6,7 +6,7 @@
 - Aplicação Android compilável, offline
 - Modo Professor e Modo Aluno
 - whisper.cpp + alinhamento + correção manual
-- CI com APK de teste
+- CI com APK de teste e publicação automática em GitHub Releases
 
 ## v0.2 — qualidade no equipamento de referência
 
