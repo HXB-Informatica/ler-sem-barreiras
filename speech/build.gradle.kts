@@ -8,7 +8,7 @@ plugins {
 
 val whisperTag = "v1.9.5"
 val whisperZipUrl = "https://github.com/ggml-org/whisper.cpp/archive/refs/tags/$whisperTag.zip"
-val modelFileName = providers.gradleProperty("whisperModel").orElse("ggml-tiny.bin")
+val modelFileName = providers.gradleProperty("whisperModel").orElse("ggml-base.bin")
 val modelUrl = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/${modelFileName.get()}"
 
 val whisperSrcDir = layout.projectDirectory.dir("src/main/cpp/third_party/whisper.cpp")
@@ -58,19 +58,23 @@ val fetchWhisperCpp = tasks.register("fetchWhisperCpp") {
 
 val fetchWhisperModel = tasks.register("fetchWhisperModel") {
     outputs.file(modelFile)
-    outputs.upToDateWhen { modelFile.asFile.exists() && modelFile.asFile.length() > 1_000_000 }
+    outputs.upToDateWhen {
+        val dest = modelFile.asFile
+        dest.exists() && dest.length() > 1_000_000 && !dest.hasSiblingWhisperModel()
+    }
     doLast {
         val dest = modelFile.asFile
         if (dest.exists() && dest.length() > 1_000_000) {
             logger.lifecycle("Modelo ${dest.name} já está presente.")
-            return@doLast
+        } else {
+            dest.parentFile.mkdirs()
+            logger.lifecycle("A obter modelo Whisper ${dest.name}…")
+            URI(modelUrl).toURL().openStream().use { input ->
+                dest.outputStream().use { output -> input.copyTo(output) }
+            }
+            logger.lifecycle("Modelo gravado em ${dest.path} (${dest.length()} bytes)")
         }
-        dest.parentFile.mkdirs()
-        logger.lifecycle("A obter modelo Whisper ${dest.name}…")
-        URI(modelUrl).toURL().openStream().use { input ->
-            dest.outputStream().use { output -> input.copyTo(output) }
-        }
-        logger.lifecycle("Modelo gravado em ${dest.path} (${dest.length()} bytes)")
+        dest.removeSiblingWhisperModels()
     }
 }
 
@@ -130,4 +134,18 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.android)
     testImplementation(libs.junit)
+}
+
+private fun File.siblingWhisperModels(): List<File> =
+    parentFile?.listFiles()?.filter {
+        it.isFile && it.name.startsWith("ggml-") && it.name.endsWith(".bin") && it.name != name
+    }.orEmpty()
+
+private fun File.hasSiblingWhisperModel(): Boolean = siblingWhisperModels().isNotEmpty()
+
+private fun File.removeSiblingWhisperModels() {
+    siblingWhisperModels().forEach {
+        logger.lifecycle("A remover modelo antigo ${it.name}")
+        it.delete()
+    }
 }

@@ -1,6 +1,6 @@
 # Motor Whisper para o Studio Windows
 
-Esta pasta recebe, em tempo de compilação, o **whisper-cli.exe** x64 (`whisper.cpp` v1.9.1) e o modelo `ggml-tiny.bin`.
+Esta pasta recebe, em tempo de compilação, o **whisper-cli.exe** x64 (`whisper.cpp` v1.9.1) e o modelo `ggml-base.bin`.
 
 Não reutiliza a biblioteca JNI Android (`libwhisper-jni.so`).
 
@@ -8,7 +8,7 @@ Não reutiliza a biblioteca JNI Android (`libwhisper-jni.so`).
 .\gradlew.bat :studio:fetchWhisperWindows
 ```
 
-Instalação manual: copie `whisper-cli.exe`, as DLL que o acompanham e `ggml-tiny.bin` para:
+Instalação manual: copie `whisper-cli.exe`, as DLL que o acompanham e `ggml-base.bin` para:
 
 - esta pasta, ou
 - `%USERPROFILE%\.lersembarreiras\whisper`, ou

@@ -20,7 +20,7 @@ def locate_whisper() -> tuple[Path, Path] | None:
     dirs.append(ROOT / "studio" / "packaging" / "windows")
     for folder in dirs:
         exe = folder / "whisper-cli.exe"
-        model = folder / "ggml-tiny.bin"
+        model = folder / "ggml-base.bin"
         if exe.is_file() and model.is_file() and model.stat().st_size > 1_000_000:
             return exe, model
     return None
@@ -42,7 +42,8 @@ def parse_whisper_json(raw: str) -> list[dict]:
             tokens = item.get("tokens")
             text = str(item.get("text") or "").strip()
             if isinstance(tokens, list) and tokens:
-                words.extend(_tokens(tokens))
+                dtw = _dtw_words(tokens)
+                words.extend(dtw if dtw else _tokens(tokens))
             else:
                 words.extend(_split_evenly(text, start, end))
         return [word for word in words if word["text"]]
@@ -55,10 +56,58 @@ def parse_whisper_json(raw: str) -> list[dict]:
             end = _time_ms(item.get("end") if item.get("end") is not None else item.get("t1"), start)
             tokens = item.get("tokens") or item.get("words")
             if isinstance(tokens, list) and tokens:
-                words.extend(_tokens(tokens))
+                dtw = _dtw_words(tokens)
+                words.extend(dtw if dtw else _tokens(tokens))
             else:
                 words.extend(_split_evenly(str(item.get("text") or ""), start, end))
     return [word for word in words if word["text"]]
+
+
+def _dtw_words(tokens: list) -> list[dict]:
+    pieces = []
+    for item in tokens:
+        if not isinstance(item, dict):
+            continue
+        text = str(item.get("text") or "")
+        if not text.strip() or text.lstrip().startswith("["):
+            continue
+        end = item.get("t_dtw")
+        if not isinstance(end, (int, float)):
+            continue
+        pieces.append((text, int(end), float(item.get("p") or 0.7)))
+    if not any(end > 0 for _, end, _ in pieces):
+        return []
+    groups: list[dict] = []
+    for text, end, prob in pieces:
+        if not groups or text[:1] in (" ", "\t"):
+            groups.append({"text": "", "end": -1, "prob": 0.0, "n": 0})
+        group = groups[-1]
+        group["text"] += text
+        if end > group["end"]:
+            group["end"] = end
+        group["prob"] += prob
+        group["n"] += 1
+    cursor = 0
+    raw = []
+    for group in groups:
+        end = cursor if group["end"] < 0 else group["end"]
+        start = cursor
+        if end < start:
+            end = start
+        if end > cursor:
+            cursor = end
+        count = group["n"] or 1
+        raw.append((group["text"].strip(), start, end, group["prob"] / count))
+    durations = sorted(end - start for _, start, end, _ in raw if end > start)
+    max_duration = max(min(durations[len(durations) // 2], 70) * 2, 20) if durations else 10**9
+    words = []
+    for text, start, end, prob in raw:
+        if not text or end <= start:
+            continue
+        if end - start > max_duration:
+            start = end - max_duration
+        words.append({"text": text, "startMs": start * 10, "endMs": end * 10, "probability": prob})
+    return words
 
 
 def _tokens(tokens: list) -> list[dict]:
@@ -107,10 +156,10 @@ def _time_ms(value, fallback: int = 0) -> int:
         return fallback
 
 
-def transcribe_wav(wav: Path, text: str, work: Path) -> tuple[list[dict], str | None, float]:
+def transcribe_wav(wav: Path, _text: str, work: Path) -> tuple[list[dict], str | None, float]:
     located = locate_whisper()
     if located is None:
-        return [], "whisper-cli.exe ou ggml-tiny.bin não encontrados", 0.0
+        return [], "whisper-cli.exe ou ggml-base.bin não encontrados", 0.0
     exe, model = located
     work.mkdir(parents=True, exist_ok=True)
     prefix = work / "out"
@@ -124,15 +173,11 @@ def transcribe_wav(wav: Path, text: str, work: Path) -> tuple[list[dict], str | 
         "pt",
         "-t",
         "1",
-        "-nt",
-        "-ml",
-        "60",
-        "-sow",
-        "-oj",
+        "-dtw",
+        "base",
+        "-ojf",
         "-of",
         str(prefix),
-        "--prompt",
-        text[:400],
     ]
     started = time.perf_counter()
     try:

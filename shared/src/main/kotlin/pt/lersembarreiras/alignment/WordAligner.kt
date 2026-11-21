@@ -113,6 +113,9 @@ class WordAligner(
                 WordIdentity.unmatched(token, index)
             } else {
                 val rec = prepared[recognizedIndex]
+                if (rec.endMs <= rec.startMs) {
+                    return@mapIndexed WordIdentity.unmatched(token, index)
+                }
                 val sim = similarity(token.normalized, normalizedRecognized[recognizedIndex].text)
                 val confidence = (rec.probability * (sim.toFloat() / matchScore.toFloat())).coerceIn(0f, 1f)
                 val review = confidence < MIN_CONFIDENCE || sim < matchScore

@@ -90,6 +90,9 @@ class NativeWhisperEngine(
         val outDir = File(context.filesDir, "models")
         outDir.mkdirs()
         val outFile = File(outDir, modelName)
+        outDir.listFiles()
+            ?.filter { it.isFile && it.name.startsWith("ggml-") && it.name.endsWith(".bin") && it.name != modelName }
+            ?.forEach { it.delete() }
         if (outFile.exists() && outFile.length() > 1_000_000) {
             return outFile
         }
@@ -129,6 +132,6 @@ class NativeWhisperEngine(
     }
 
     companion object {
-        const val DEFAULT_MODEL = "ggml-tiny.bin"
+        const val DEFAULT_MODEL = "ggml-base.bin"
     }
 }

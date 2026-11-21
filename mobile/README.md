@@ -43,10 +43,9 @@ O APK fica em `mobile/android/app/build/outputs/apk/debug/`.
 - Modo Aluno: três modos de leitura, letra, contraste, destaque pela posição do leitor
 - Alinhador TypeScript (Needleman–Wunsch, lacunas curtas, validador de intervalos) com testes
 - Módulos nativos Android: ficheiros, ZIP `.lsb`, áudio
-- Sincronização automática local com whisper.cpp (`ggml-tiny.bin`, língua `pt`)
+- Sincronização automática local com o EBranch-w2vBERT2-EP (cabeça CTC, ONNX int8), empacotado no APK
 
 ## O que falta para paridade com a 0.1
 
-- Compilar whisper.cpp neste APK e devolver palavras com timestamps
 - Editor visual de intervalos (forma de onda)
 - Validação no HOTWAV TAB R9 Plus em modo avião

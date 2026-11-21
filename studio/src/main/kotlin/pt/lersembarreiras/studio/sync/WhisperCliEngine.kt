@@ -34,15 +34,10 @@ class WhisperCliEngine(
             "-m", install.model.absolutePath,
             "-f", wav16kMono.absolutePath,
             "-l", language,
-            "-nt",
-            "-ml", "60",
-            "-sow",
-            "-oj",
+            "-dtw", "base",
+            "-ojf",
             "-of", prefix.absolutePath,
         )
-        if (!prompt.isNullOrBlank()) {
-            command += listOf("--prompt", prompt.take(400))
-        }
         return try {
             val builder = ProcessBuilder(command)
                 .directory(install.executable.parentFile)

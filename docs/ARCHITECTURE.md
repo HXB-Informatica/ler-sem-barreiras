@@ -20,7 +20,7 @@ mobile/ (React Native 0.88, TypeScript)
   pacote .lsb (formato inalterado)
 ```
 
-`LsbSpeech.isAvailable()` devolve `false` até o whisper.cpp ser ligado. A importação `.lsb` e a leitura sincronizada já usam o alinhador e o relógio do `MediaPlayer`.
+`LsbSpeech` corre o EBranch-w2vBERT2-EP (cabeça CTC em ONNX) dentro do APK. A importação `.lsb` e a leitura sincronizada usam o alinhador e o relógio do leitor. O fluxo é: WAV 16 kHz, características log-mel w2v-BERT, CTC ganancioso, alinhador sobre o texto do professor. Detalhe em [OFFLINE_AI.md](OFFLINE_AI.md).
 
 A UI deixa de ser Jetpack Compose. O contrato de dados e o motor local **não** passam a ser serviços na Internet.
 
@@ -43,14 +43,14 @@ A UI deixa de ser Jetpack Compose. O contrato de dados e o motor local **não** 
 
 Esta divisão segue o pedido original e evita um único módulo monolítico, sem introduzir injeção de dependências pesada. O `AppContainer` em `LerSemBarreirasApp` cria os serviços.
 
-## Fluxo de sincronização
+## Fluxo de sincronização (linha 0.1 e Studio)
 
 ```
 texto original + áudio
         ↓
 conversão interna para PCM 16 kHz mono
         ↓
-whisper.cpp (JNI, CPU, língua `pt`)
+whisper.cpp (JNI na linha 0.1, whisper-cli no Studio)
         ↓
 palavras reconhecidas com timestamps
         ↓
@@ -65,7 +65,7 @@ A reprodução no Modo Aluno consulta `ExoPlayer.currentPosition`. Não se usa u
 
 ## Motor de IA isolado
 
-`SpeechRecognitionEngine` é a única API usada pela interface. A implementação atual é `NativeWhisperEngine`. Substituir o motor não exige reescrever o Modo Professor nem o leitor.
+Na linha 0.1, `SpeechRecognitionEngine` é a única API usada pela interface e a implementação é `NativeWhisperEngine`. Na app móvel 0.2 o contrato equivalente é `LsbSpeech`, com o EBranch-w2vBERT2-EP.
 
 ## Persistência e formato exportável
 

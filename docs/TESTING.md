@@ -49,7 +49,7 @@ Ainda **não realizados**. Quando o tablet estiver disponível, registar:
 | --- | --- | --- |
 | Palavras a ≤ 250 ms do instante real | ≥ 95 % | por medir |
 | Tempo de processamento / duração do áudio | < 3× | por medir |
-| RAM durante `tiny` | compatível com 8 GB físicos | por medir |
+| RAM durante `base` | compatível com 8 GB físicos | por medir |
 | Estabilidade (sem crash, cancelamento) | estável | por medir |
 | Fluidez da reprodução | sem desvio acumulado | por medir |
 

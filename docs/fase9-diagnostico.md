@@ -18,6 +18,6 @@ A concordância entre Whisper e o alinhador de energia **não** foi usada como p
 5. **Pausas** — interpolar uma palavra no meio de um silêncio de 2 s seria pior; a Fase 9 só interpola lacunas curtas (≤ 500 ms por palavra).
 6. **Palavras repetidas** — o NW já as ordena; não era a falha dominante nos relatórios.
 7. **Normalização** — dígitos (`1` vs `um`) e fragmentos (`va`+`mos`) não eram fundidos.
-8. **Modelo acústico** — `tiny` continua limitado em fala rápida/ruído. `base` (~142 MB) não foi adoptado no APK: demasiado pesado para o tablet alvo, sem evidência no R9 Plus. O Studio pode compilar com `-PwhisperModel=ggml-base.bin` se alguém quiser comparar **offline**.
+8. **Modelo acústico** — `tiny` continua limitado em fala rápida/ruído. O default passou a `ggml-base.bin` (~142 MB). Continua por medir no R9 Plus; `tiny` ainda se obtém com `-PwhisperModel=ggml-tiny.bin`.
 
 Não houve treino de modelos: não há corpus anotado nem viabilidade no equipamento escolar.

@@ -159,8 +159,8 @@ Não há relógio paralelo ao leitor. Isso está implementado como documentado.
 | Origem | GitHub `ggml-org/whisper.cpp` tag **v1.9.5** (`speech/build.gradle.kts`) |
 | Integração | CMake `add_subdirectory` + biblioteca partilhada `lersembarreiras_whisper` |
 | JNI | `speech/src/main/cpp/jni.cpp` ↔ `WhisperJni` |
-| Modelo por omissão | `ggml-tiny.bin` (multilingue), copiado de assets para `filesDir/models/` |
-| Modelo configurável na compilação | `-PwhisperModel=` (ex.: `ggml-base.bin`) |
+| Modelo por omissão | `ggml-base.bin` (multilingue), copiado de assets para `filesDir/models/` |
+| Modelo configurável na compilação | `-PwhisperModel=` (ex.: `ggml-tiny.bin`) |
 | GPU | `use_gpu = false`, `flash_attn = false`; GGML CUDA/Metal/Vulkan desligados |
 | Sampling | `WHISPER_SAMPLING_GREEDY` |
 | Língua | `"pt"` (Whisper; **não** distingue pt-PT/pt-BR) |
@@ -271,7 +271,7 @@ Base Room `ler-sem-barreiras.db`, tabela `contents`:
 
 Versão da base: 1, `exportSchema = false`, `fallbackToDestructiveMigration()`.
 
-O modelo Whisper em runtime: `<filesDir>/models/ggml-tiny.bin` (cópia dos assets).
+O modelo Whisper em runtime: `<filesDir>/models/ggml-base.bin` (cópia dos assets).
 
 Não há sincronização entre dispositivos. O JSON está preparado para partilha futura por ficheiro (roteiro v0.2), mas a UI **não** exporta nem importa pacotes.
 
@@ -342,7 +342,7 @@ A secção «Testes de integração» em `TESTING.md` descreve **caminhos da apl
 
 ### 10.3 CI
 
-`.github/workflows/android.yml`: Ubuntu, JDK 17, NDK/CMake, `./gradlew test`, `assembleDebug`, verifica `ggml-tiny.bin` e `liblersembarreiras_whisper.so` no APK, publica Release em tags `v*`.
+`.github/workflows/android.yml`: Ubuntu, JDK 17, NDK/CMake, `./gradlew test`, `assembleDebug`, verifica `ggml-base.bin` e `liblersembarreiras_whisper.so` no APK, publica Release em tags `v*`.
 
 ### 10.4 Limitações desta auditoria (execução)
 
@@ -474,7 +474,7 @@ Restrições a preservar: GPL-3.0, offline, sem contas, sem APIs de voz pagas.
 
 | Risco | Gravidade | Recomendação (Fase 2, não executar agora) |
 | --- | --- | --- |
-| `tiny` + timestamps de token experimentais em PT escolar | Alta | Medir no laboratório; comparar `tiny` vs `base` **offline** no build, sem mudar o default até haver números |
+| `base` + timestamps de token experimentais em PT escolar | Alta | Medir no R9 Plus. O default passou a `base` sem esse ensaio; `tiny` continua disponível com `-PwhisperModel=` |
 | Sem alinhamento forçado ao texto do professor | Alta | Avaliar DTW / whisper alinhado ao script; o objetivo do produto é cronometrar o texto, não transcrever |
 | Numerais e palavras de 2–3 letras | Alta | Mapa `1`↔`um`… e relaxar `similarity` para tokens curtos, com testes |
 | Fusão JNI por espaço inicial | Alta | Separar também por pontuação; opcionalmente partir reconhecidos longos pelas palavras do texto |
@@ -495,7 +495,7 @@ Restrições a preservar: GPL-3.0, offline, sem contas, sem APIs de voz pagas.
 
 - Arquitetura modular alinhada com o domínio (texto, áudio, fala, alinhamento, persistência, duas UIs).
 - Offline real (sem permissão de Internet na app).
-- whisper.cpp v1.9.5 por JNI, modelo `tiny` multilingue, língua `pt`, CPU only — confirmado no C++ e no Gradle.
+- whisper.cpp v1.9.5 por JNI, modelo `base` multilingue, língua `pt`, CPU only — confirmado no C++ e no Gradle.
 - Domínio e alinhador já separados da UI, testáveis em JVM.
 - Persistência duplicada (Room + JSON) adequada a um pacote partilhável.
 - Correção manual e estados de revisão existem e são persistidos.

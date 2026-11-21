@@ -219,7 +219,7 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
         throw new Error('Grave ou importe a narração antes de sincronizar.');
       }
       const path = await absolutePath(`contents/${id}/audio.wav`);
-      const transcription = await transcribeLocal(path, text);
+      const transcription = await transcribeLocal(path);
       const result = align({
         sourceText: text,
         transcription,

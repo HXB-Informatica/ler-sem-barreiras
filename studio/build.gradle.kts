@@ -12,15 +12,20 @@ plugins {
 
 val whisperWinTag = "v1.9.1"
 val whisperWinZip = "https://github.com/ggml-org/whisper.cpp/releases/download/$whisperWinTag/whisper-bin-x64.zip"
-val whisperModelName = "ggml-tiny.bin"
+val whisperModelName = "ggml-base.bin"
 val whisperModelUrl = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/$whisperModelName"
 val whisperPackaging = layout.projectDirectory.dir("packaging/windows")
 
 val fetchWhisperWindows = tasks.register("fetchWhisperWindows") {
     outputs.dir(whisperPackaging)
     outputs.upToDateWhen {
-        whisperPackaging.asFile.resolve("whisper-cli.exe").exists() &&
-            whisperPackaging.asFile.resolve(whisperModelName).let { it.exists() && it.length() > 1_000_000 }
+        val dir = whisperPackaging.asFile
+        val model = dir.resolve(whisperModelName)
+        val siblings = dir.listFiles()?.any {
+            it.isFile && it.name.startsWith("ggml-") && it.name.endsWith(".bin") && it.name != whisperModelName
+        } == true
+        dir.resolve("whisper-cli.exe").exists() &&
+            model.exists() && model.length() > 1_000_000 && !siblings
     }
     doLast {
         val dest = whisperPackaging.asFile
@@ -58,6 +63,12 @@ val fetchWhisperWindows = tasks.register("fetchWhisperWindows") {
                 model.outputStream().use { output -> input.copyTo(output) }
             }
         }
+        dest.listFiles()
+            ?.filter { it.isFile && it.name.startsWith("ggml-") && it.name.endsWith(".bin") && it.name != whisperModelName }
+            ?.forEach {
+                logger.lifecycle("A remover modelo antigo ${it.name}")
+                it.delete()
+            }
         logger.lifecycle("Whisper Windows em ${dest.path}")
     }
 }

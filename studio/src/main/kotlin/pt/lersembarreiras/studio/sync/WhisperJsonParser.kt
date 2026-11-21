@@ -35,7 +35,8 @@ object WhisperJsonParser {
             val end = offsets?.get("to")?.jsonPrimitive?.longOrNull ?: start
             val tokens = obj["tokens"]?.jsonArray
             if (tokens != null && tokens.isNotEmpty()) {
-                words += parseTokens(tokens)
+                val dtw = parseDtwWords(tokens)
+                words += if (dtw.isNotEmpty()) dtw else parseTokens(tokens)
             } else {
                 val text = obj["text"]?.jsonPrimitive?.contentOrNull.orEmpty()
                 words += splitEvenly(text, start, end)
@@ -53,12 +54,60 @@ object WhisperJsonParser {
             val end = timeMs(obj["end"] ?: obj["t1"], start)
             val tokens = obj["tokens"]?.jsonArray ?: obj["words"]?.jsonArray
             if (tokens != null && tokens.isNotEmpty()) {
-                words += parseTokens(tokens)
+                val dtw = parseDtwWords(tokens)
+                words += if (dtw.isNotEmpty()) dtw else parseTokens(tokens)
             } else {
                 words += splitEvenly(obj["text"]?.jsonPrimitive?.contentOrNull.orEmpty(), start, end)
             }
         }
         return words.filter { it.text.isNotBlank() }
+    }
+
+    private fun parseDtwWords(tokens: JsonArray): List<RecognizedWord> {
+        data class Piece(val text: String, val endCs: Long, val probability: Float)
+        val pieces = tokens.mapNotNull { item ->
+            val obj = item as? JsonObject ?: return@mapNotNull null
+            val text = obj["text"]?.jsonPrimitive?.contentOrNull.orEmpty()
+            if (text.isBlank() || text.trimStart().startsWith("[")) return@mapNotNull null
+            val endCs = jsonNumber(obj["t_dtw"]) ?: return@mapNotNull null
+            val probability = jsonNumber(obj["p"])?.toFloat() ?: 0.7f
+            Piece(text, endCs, probability)
+        }
+        if (pieces.none { it.endCs > 0L }) return emptyList()
+        data class Group(val text: StringBuilder, var endCs: Long, var probSum: Float, var count: Int)
+        val groups = mutableListOf<Group>()
+        for (piece in pieces) {
+            val boundary = groups.isNotEmpty() && (piece.text.startsWith(" ") || piece.text.startsWith("\t"))
+            if (groups.isEmpty() || boundary) groups += Group(StringBuilder(), -1L, 0f, 0)
+            val group = groups.last()
+            group.text.append(piece.text)
+            if (piece.endCs > group.endCs) group.endCs = piece.endCs
+            group.probSum += piece.probability
+            group.count += 1
+        }
+        var cursor = 0L
+        val raw = groups.map { group ->
+            val end = if (group.endCs < 0L) cursor else group.endCs
+            val start = cursor
+            val bounded = if (end < start) start else end
+            if (bounded > cursor) cursor = bounded
+            Triple(group.text.toString().trim(), start, bounded) to (if (group.count > 0) group.probSum / group.count else 0.7f)
+        }
+        val durations = raw.map { it.first.third - it.first.second }.filter { it > 0L }.sorted()
+        val maxDuration = if (durations.isEmpty()) Long.MAX_VALUE else maxOf(durations[durations.size / 2].coerceAtMost(70L) * 2L, 20L)
+        return raw.mapNotNull { (span, probability) ->
+            val (text, startCs, endCs) = span
+            if (text.isBlank() || endCs <= startCs) return@mapNotNull null
+            val start = if (endCs - startCs > maxDuration) endCs - maxDuration else startCs
+            RecognizedWord(text, start * 10L, endCs * 10L, probability)
+        }
+    }
+
+    private fun jsonNumber(element: JsonElement?): Long? {
+        val primitive = runCatching { element?.jsonPrimitive }.getOrNull() ?: return null
+        primitive.longOrNull?.let { return it }
+        primitive.contentOrNull?.toDoubleOrNull()?.let { return it.toLong() }
+        return null
     }
 
     private fun parseTokens(tokens: JsonArray): List<RecognizedWord> {

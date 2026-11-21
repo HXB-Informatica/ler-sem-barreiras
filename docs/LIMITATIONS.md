@@ -4,7 +4,7 @@ Actualizado na **v0.2.0**. Não são desculpas: são restrições reais do produ
 
 ## Motivo da v0.2.0
 
-A app Kotlin **não está a funcionar correctamente** para o tablet escolar. Isso motivou a reescrita em React Native ([ADR 0001](adr/0001-migrar-para-react-native.md)). A pasta `mobile/` contém a v0.2.0: UI, alinhador, `.lsb` e whisper.cpp no APK React Native. A precisão no HOTWAV TAB R9 Plus ainda não foi medida.
+A app Kotlin **não está a funcionar correctamente** para o tablet escolar. Isso motivou a reescrita em React Native ([ADR 0001](adr/0001-migrar-para-react-native.md)). A pasta `mobile/` contém a v0.2.0: UI, alinhador, `.lsb` e o EBranch-w2vBERT2-EP (cabeça CTC, ONNX int8) no APK. A precisão no HOTWAV TAB R9 Plus ainda não foi medida.
 
 O restante deste ficheiro descreve a linha 0.1 (Fase 9), que permanece verdadeira para o código Kotlin.
 
@@ -18,7 +18,8 @@ O restante deste ficheiro descreve a linha 0.1 (Fase 9), que permanece verdadeir
 
 ## Motor
 
-- Whisper `tiny` erra em fala rápida, sobreposta ou ruidosa.
+- O EBranch-w2vBERT2-EP escreve minúsculas, sem pontuação, números por extenso e grafia pré-Acordo. `projecto` não casa com `projeto`. Uma diferença de uma letra fica para revisão.
+- Cada quadro CTC dura 80 ms. A precisão no HOTWAV TAB R9 Plus ainda não foi medida.
 - Interpolação ALIGNED em lacunas curtas é uma ajuda ao professor, não uma prova de que a palavra foi dita.
 - Palavras nas pontas sem ASR continuam sem timestamp.
 - MFA português não faz parte da aplicação.

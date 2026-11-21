@@ -117,7 +117,7 @@ export async function transcribeLocal(path: string, prompt = ''): Promise<Transc
   const available = await speechNative.isAvailable();
   if (!available) {
     throw new Error(
-      'A biblioteca nativa whisper.cpp não foi carregada. Compile a aplicação com NDK.',
+      'O modelo de reconhecimento não está neste dispositivo.',
     );
   }
   const result = await speechNative.transcribe(path, prompt);

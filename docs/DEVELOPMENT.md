@@ -21,7 +21,9 @@ npx react-native run-android
 
 A release Android **não** declara `INTERNET`. Só a variante `debug` a inclui, para o Metro. Não publique um APK Kotlin 0.1.x com `versionName` 0.2.0.
 
-As instruções Gradle da linha Kotlin abaixo aplicam-se ao Studio Windows e ao código de referência 0.1.x.
+A compilação da app móvel descarrega o EBranch-w2vBERT2-EP (grafo CTC int8 e pesos) para `mobile/android/app/ctc-model/` e copia-o para os assets. Esses ficheiros não entram no Git. Ver [OFFLINE_AI.md](OFFLINE_AI.md).
+
+As instruções Gradle da linha Kotlin abaixo aplicam-se ao Studio Windows e ao código de referência 0.1.x, que sincronizam com whisper.cpp.
 
 ## Requisitos de compilação (Kotlin 0.1.x)
 
@@ -50,7 +52,7 @@ python test-lab/run_real.py --seed 8 --count 200 --twice
 Tarefas úteis do módulo `speech`:
 
 - `fetchWhisperCpp` — obtém whisper.cpp `v1.9.5`
-- `fetchWhisperModel` — obtém `ggml-tiny.bin` (ou outro, via `-PwhisperModel=`)
+- `fetchWhisperModel` — obtém `ggml-base.bin` (ou outro, via `-PwhisperModel=`)
 
 Os artefactos descarregados ficam em:
 
@@ -62,7 +64,7 @@ Ambos estão no `.gitignore`. Não os publique no Git.
 ## Modelo alternativo
 
 ```bash
-./gradlew :app:assembleDebug -PwhisperModel=ggml-base.bin
+./gradlew :app:assembleDebug -PwhisperModel=ggml-tiny.bin
 ```
 
 Use apenas variantes **multilingues**. Não utilize modelos `.en`.

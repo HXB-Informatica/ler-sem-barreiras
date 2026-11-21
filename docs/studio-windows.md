@@ -76,7 +76,7 @@ O JNI Android (`libwhisper-jni.so` / NDK) **não** é reutilizado.
 | Peça | Origem |
 | --- | --- |
 | `whisper-cli.exe` x64 | [whisper.cpp v1.9.1](https://github.com/ggml-org/whisper.cpp/releases/tag/v1.9.1) `whisper-bin-x64.zip` |
-| `ggml-tiny.bin` | Hugging Face `ggerganov/whisper.cpp` (igual ao modelo Android, ficheiro GGML, não a .so) |
+| `ggml-base.bin` | Hugging Face `ggerganov/whisper.cpp` (igual ao modelo Android, ficheiro GGML, não a .so) |
 
 ```powershell
 .\gradlew.bat :studio:fetchWhisperWindows

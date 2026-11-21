@@ -2,6 +2,54 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
+def ctcDir = file("ctc-model")
+def ctcBase = "https://huggingface.co/OpenVoiceOS/inesc-id-ebranch-w2vbert2-ep-ctc-onnx/resolve/main"
+def fetchEbranchCtc = tasks.register("fetchEbranchCtc") {
+    outputs.dir(ctcDir)
+    doLast {
+        ctcDir.mkdirs()
+        def files = [
+            "model.int8.onnx"     : 6_000_000L,
+            "model.int8.onnx.data": 600_000_000L,
+            "vocab.txt"           : 10_000L,
+        ]
+        files.each { name, minBytes ->
+            def dest = new File(ctcDir, name)
+            if (dest.isFile() && dest.length() >= minBytes) {
+                return
+            }
+            logger.lifecycle("A obter ${name}…")
+            def url = new URI("${ctcBase}/${name}").toURL()
+            url.withInputStream { input ->
+                dest.withOutputStream { output -> input.transferTo(output) }
+            }
+        }
+        def runnable = new File(ctcDir, "model.onnx")
+        if (!runnable.isFile() || runnable.length() < 1_000_000) {
+            def python = new File("/tmp/onnx-asr-venv/bin/python")
+            def command = python.isFile() ? python.absolutePath : "python3"
+            exec {
+                workingDir = file(".")
+                commandLine command, "rewrite_ctc_graph.py"
+            }
+        }
+    }
+}
+tasks.matching { it.name == "preBuild" }.configureEach { dependsOn(fetchEbranchCtc) }
+
+def ctcAssets = file("src/main/assets/ctc")
+def stageEbranchCtcAssets = tasks.register("stageEbranchCtcAssets", Copy) {
+    dependsOn(fetchEbranchCtc)
+    from(ctcDir) {
+        include("model.onnx")
+        include("model.int8.onnx.data")
+    }
+    into(ctcAssets)
+}
+tasks.matching { it.name.startsWith("merge") && it.name.endsWith("Assets") }.configureEach {
+    dependsOn(stageEbranchCtcAssets)
+}
+
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.
@@ -93,6 +141,9 @@ android {
             pickFirsts += ["**/libc++_shared.so"]
         }
     }
+    androidResources {
+        noCompress += ["onnx", "data", "bin"]
+    }
     signingConfigs {
         debug {
             storeFile file('debug.keystore')
@@ -116,7 +167,7 @@ android {
 }
 
 dependencies {
-    implementation project(":whisper")
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.22.0")
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 

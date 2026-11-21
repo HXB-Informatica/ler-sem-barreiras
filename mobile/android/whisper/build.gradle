@@ -8,7 +8,7 @@ plugins {
 
 def whisperTag = "v1.9.5"
 def whisperZipUrl = "https://github.com/ggml-org/whisper.cpp/archive/refs/tags/${whisperTag}.zip"
-def modelFileName = project.hasProperty("whisperModel") ? project.property("whisperModel") : "ggml-tiny.bin"
+def modelFileName = project.hasProperty("whisperModel") ? project.property("whisperModel") : "ggml-base.bin"
 def modelUrl = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/${modelFileName}"
 def whisperSrcDir = file("src/main/cpp/third_party/whisper.cpp")
 def modelDir = file("src/main/assets/models")
@@ -62,18 +62,32 @@ tasks.register("fetchWhisperCpp") {
 
 tasks.register("fetchWhisperModel") {
     outputs.file(modelFile)
-    outputs.upToDateWhen { modelFile.exists() && modelFile.length() > 1_000_000 }
+    outputs.upToDateWhen {
+        modelFile.exists() && modelFile.length() > 1_000_000 && !hasSiblingWhisperModel(modelFile)
+    }
     doLast {
         if (modelFile.exists() && modelFile.length() > 1_000_000) {
             logger.lifecycle("Modelo ${modelFile.name} já está presente.")
-            return
+        } else {
+            modelDir.mkdirs()
+            logger.lifecycle("A obter modelo Whisper ${modelFile.name}…")
+            URI.create(modelUrl).toURL().withInputStream { input ->
+                modelFile.withOutputStream { output -> input.transferTo(output) }
+            }
+            logger.lifecycle("Modelo gravado em ${modelFile.path} (${modelFile.length()} bytes)")
         }
-        modelDir.mkdirs()
-        logger.lifecycle("A obter modelo Whisper ${modelFile.name}…")
-        URI.create(modelUrl).toURL().withInputStream { input ->
-            modelFile.withOutputStream { output -> input.transferTo(output) }
+        modelFile.parentFile?.listFiles()?.findAll {
+            it.isFile() && it.name.startsWith("ggml-") && it.name.endsWith(".bin") && it.name != modelFile.name
+        }?.each {
+            logger.lifecycle("A remover modelo antigo ${it.name}")
+            it.delete()
         }
-        logger.lifecycle("Modelo gravado em ${modelFile.path} (${modelFile.length()} bytes)")
+    }
+}
+
+def hasSiblingWhisperModel(File model) {
+    model.parentFile?.listFiles()?.any {
+        it.isFile() && it.name.startsWith("ggml-") && it.name.endsWith(".bin") && it.name != model.name
     }
 }
 

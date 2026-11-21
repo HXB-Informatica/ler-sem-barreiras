@@ -333,7 +333,7 @@ class TeacherEditViewModel(
                 val transcription = speechEngine.transcribe(
                     pcm16kMono = pcm.samples,
                     language = "pt",
-                    prompt = content.text.take(400),
+                    prompt = null,
                     onProgress = { value ->
                         _state.update {
                             it.copy(syncProgress = 0.1f + value * 0.7f)

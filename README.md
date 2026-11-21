@@ -28,7 +28,7 @@ A **v0.2.0** inicia a conversão da aplicação móvel de Kotlin/Android nativo 
 - Decisão: [docs/adr/0001-migrar-para-react-native.md](docs/adr/0001-migrar-para-react-native.md)
 - Notas desta versão: [docs/releases/v0.2.0.md](docs/releases/v0.2.0.md)
 
-O código activo está em [`mobile/`](mobile/README.md). Compilação e testes: `cd mobile && npm test`. A sincronização automática no tablet espera pelo whisper.cpp nativo; até lá importe um `.lsb` do Studio. O código Kotlin 0.1.x permanece como referência e como Studio Windows.
+O código activo está em [`mobile/`](mobile/README.md). Compilação e testes: `cd mobile && npm test`. A sincronização automática no tablet usa o EBranch-w2vBERT2-EP, descrito em [docs/OFFLINE_AI.md](docs/OFFLINE_AI.md). O código Kotlin 0.1.x permanece como referência e como Studio Windows.
 
 ## O que a versão 0.1 faz
 
@@ -52,9 +52,9 @@ O código activo está em [`mobile/`](mobile/README.md). Compilação e testes: 
 
 ## Motor de IA offline
 
-A sincronização usa [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (MIT), integrado por JNI, e o modelo Whisper multilingue `tiny` (`ggml-tiny.bin`, MIT). O modelo é obtido **durante a compilação** e fica dentro do APK. A aplicação **não** tem permissão `INTERNET` e não descarrega nada em tempo de execução.
+A sincronização no tablet usa o [EBranch-w2vBERT2-EP](https://huggingface.co/inesc-id/EBranch-w2vBERT2-EP) (CC-BY-4.0), o E-Branchformer de português europeu do artigo [CAMÕES](https://arxiv.org/pdf/2508.19721) (Carvalho et al., IEEE ASRU 2025). O APK inclui o export ONNX int8 da cabeça CTC, [inesc-id-ebranch-w2vbert2-ep-ctc-onnx](https://huggingface.co/OpenVoiceOS/inesc-id-ebranch-w2vbert2-ep-ctc-onnx), executado com ONNX Runtime no próprio dispositivo. O modelo é obtido **durante a compilação** e fica dentro do APK. A aplicação **não** tem permissão `INTERNET` e não descarrega nada em tempo de execução.
 
-O objetivo do motor não é substituir o texto do professor: é estimar *quando* cada palavra do texto original é pronunciada na gravação. Os detalhes estão em [docs/OFFLINE_AI.md](docs/OFFLINE_AI.md).
+O objetivo do motor não é substituir o texto do professor: é estimar *quando* cada palavra do texto original é pronunciada na gravação. Os detalhes, incluindo o export com descodificador de atenção que este APK não carrega, estão em [docs/OFFLINE_AI.md](docs/OFFLINE_AI.md).
 
 ## Requisitos
 
@@ -108,7 +108,7 @@ No Windows (PowerShell):
 .\gradlew.bat :app:assembleDebug
 ```
 
-A primeira compilação descarrega o código do whisper.cpp e o modelo `ggml-tiny.bin`. Estas transferências ocorrem **só na máquina de compilação**, nunca na aplicação instalada.
+A primeira compilação da app móvel descarrega o grafo CTC int8 e os pesos do EBranch-w2vBERT2-EP. Estas transferências ocorrem **só na máquina de compilação**, nunca na aplicação instalada. O Studio Windows descarrega à parte o whisper.cpp usado nessa ferramenta.
 
 ## Documentação
 

@@ -18,7 +18,7 @@ data class WhisperInstall(
  */
 object WhisperRuntime {
     const val EXE_NAME = "whisper-cli.exe"
-    const val MODEL_NAME = "ggml-tiny.bin"
+    const val MODEL_NAME = "ggml-base.bin"
 
     fun locate(): WhisperInstall? {
         return candidateDirs()
@@ -39,7 +39,7 @@ object WhisperRuntime {
             "Motor local: ${found.executable.name} + ${found.model.name} (${found.model.length() / 1_000_000} MB)."
         } else {
             "whisper-cli.exe Windows não encontrado. Execute .\\gradlew.bat :studio:fetchWhisperWindows " +
-                "ou coloque o binário e ggml-tiny.bin em %USERPROFILE%\\.lersembarreiras\\whisper"
+                "ou coloque o binário e ggml-base.bin em %USERPROFILE%\\.lersembarreiras\\whisper"
         }
     }
 

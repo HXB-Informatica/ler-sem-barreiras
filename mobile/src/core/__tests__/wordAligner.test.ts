@@ -76,6 +76,17 @@ describe('WordAligner', () => {
     expect(result.words.every(word => word.startMs != null)).toBe(true);
   });
 
+  it('does not attach a word to a zero-length time at the end of the file', () => {
+    const result = alignText(
+      'o rato roeu',
+      [rec('o', 260, 780), rec('rato', 830, 1200), rec('roeu', 4690, 4690)],
+      4693,
+    );
+    expect(result.words[0].startMs).toBe(260);
+    expect(result.words[1].startMs).toBe(830);
+    expect(result.words[2].startMs).toBeNull();
+  });
+
   it('marks every word for review when recognition is empty', () => {
     const result = alignText('três palavras aqui', [], 1000);
     expect(result.alignedCount).toBe(0);

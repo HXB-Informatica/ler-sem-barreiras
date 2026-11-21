@@ -21,6 +21,12 @@ speech/src/main/cpp/third_party/whisper.cpp/
 mobile/android/whisper/src/main/cpp/third_party/whisper.cpp/
 **/src/main/assets/models/*.bin
 **/src/main/assets/models/*.gguf
+mobile/android/app/src/main/assets/ctc/model.int8.onnx
+mobile/android/app/src/main/assets/ctc/model.int8.onnx.data
+mobile/android/app/src/main/assets/ctc/model.onnx
+mobile/android/app/src/main/assets/ctc/model.onnx.data
+mobile/android/app/ctc-model/*.onnx
+mobile/android/app/ctc-model/*.data
 studio/packaging/windows/*.exe
 studio/packaging/windows/*.dll
 studio/packaging/windows/*.bin
