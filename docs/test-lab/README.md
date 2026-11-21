@@ -10,6 +10,6 @@ Os dois ensaios coincidiram. Os identificadores dos casos têm a forma `s0007-NN
 
 Ficheiros: [example-summary.json](example-summary.json), [example-report.html](example-report.html).
 
-O erro médio de timestamp neste ensaio é **0 ms** porque, por omissão, as palavras reconhecidas injectadas no alinhador usam os mesmos limites PCM da concatenação. As categorias `asr_omit` e `asr_substitute` baixam a percentagem de alinhamento (palavras em falta). Isto valida o motor de alinhamento, não a precisão fonética nem o Whisper sobre o WAV.
+O erro médio de timestamp neste ensaio é **0 ms** porque, por omissão, as palavras reconhecidas injectadas no alinhador usam os mesmos limites PCM da concatenação. As categorias `asr_omit` e `asr_substitute` baixam a percentagem de alinhamento (palavras em falta). Isto valida o motor de alinhamento, não a precisão fonética sobre o WAV.
 
 Os tempos de referência **não** são fronteiras de fala natural.

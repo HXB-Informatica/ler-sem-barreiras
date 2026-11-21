@@ -44,7 +44,3 @@ A saída é minúscula, sem pontuação, com números por extenso e com a grafia
 - sobreposições residuais recortadas pelo `TimeValidator` (excepto palavras MANUAL/VERIFIED)
 
 Não são inventados timestamps com aparência de precisão de palavra quando o motor não devolve uma palavra. Palavras sem correspondência fiável ficam com `startMs`/`endMs` nulos e `needsReview = true`, excepto lacunas **curtas** entre duas âncoras: essas recebem um intervalo interpolado (`timestampOrigin` `ALIGNED`, estado REVIEW). Pausas longas e pontas da frase não são preenchidas.
-
-## Studio Windows e linha Kotlin 0.1
-
-O Studio Windows e o módulo Kotlin `:speech` sincronizam com whisper.cpp (`whisper-cli` no Windows, JNI na linha 0.1). Essa linha está congelada. O laboratório em `test-lab/` também continua a chamar `whisper-cli`.

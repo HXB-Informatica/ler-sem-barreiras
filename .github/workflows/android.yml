@@ -52,8 +52,6 @@ jobs:
           set -euo pipefail
           APK=$(ls app/build/outputs/apk/debug/*.apk | head -n1)
           test -s "$APK"
-          unzip -l "$APK" | grep -q "assets/models/ggml-base.bin"
-          unzip -l "$APK" | grep -q "lib/arm64-v8a/liblersembarreiras_whisper.so"
           echo "APK verificado: $APK ($(wc -c < "$APK") bytes)"
 
       - name: Upload debug APK

@@ -16,7 +16,7 @@ A app móvel Kotlin 0.1.x não está a funcionar correctamente; o desenvolviment
 Última publicação instalável: **v0.1.1-beta** (`versionName` 0.1.1, `versionCode` 2).
 
 - Fundação do repositório público e da licença GPL-3.0-only
-- App Android Compose, Studio Windows, whisper.cpp JNI, alinhador, laboratórios 7–9
+- App Android Compose, Studio Windows, alinhador, laboratórios 7–9
 - Correção da gravação na 0.1.1
 - **Não** continua como base da app móvel. O código serve de referência de formatos e do Studio.
 

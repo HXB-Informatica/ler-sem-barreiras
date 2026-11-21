@@ -20,3 +20,17 @@ fun interface LocalTranscriber {
         isCancelled: () -> Boolean,
     ): TranscriptionOutcome
 }
+
+class MissingTranscriber : LocalTranscriber {
+    override fun transcribe(
+        wav16kMono: File,
+        language: String,
+        prompt: String?,
+        isCancelled: () -> Boolean,
+    ): TranscriptionOutcome = TranscriptionOutcome(
+        error = "O reconhecimento local não está incluído nesta versão.",
+        engineAvailable = false,
+    )
+
+    fun cancel() = Unit
+}

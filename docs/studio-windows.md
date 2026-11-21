@@ -69,22 +69,9 @@ A Fase 5 **não** foi iniciada nesta nota da Fase 4; ver secção seguinte.
 
 O professor grava (ou importa), escreve o texto, corre o alinhamento **local** e corrige na mesma janela. Não é preciso tablet.
 
-### Motor de reconhecimento Windows
+### Reconhecimento
 
-O JNI Android (`libwhisper-jni.so` / NDK) **não** é reutilizado.
-
-| Peça | Origem |
-| --- | --- |
-| `whisper-cli.exe` x64 | [whisper.cpp v1.9.1](https://github.com/ggml-org/whisper.cpp/releases/tag/v1.9.1) `whisper-bin-x64.zip` |
-| `ggml-base.bin` | Hugging Face `ggerganov/whisper.cpp` (igual ao modelo Android, ficheiro GGML, não a .so) |
-
-```powershell
-.\gradlew.bat :studio:fetchWhisperWindows
-```
-
-Os ficheiros ficam em `studio/packaging/windows/` e entram na distribuição desktop (`compose.application.resources.dir`). Alternativas: `%USERPROFILE%\.lersembarreiras\whisper` ou `LER_SEM_BARREIRAS_WHISPER_DIR`.
-
-Se o binário faltar, o alinhamento **mesmo assim** cria as palavras do texto (estado REVIEW) para correção manual.
+O Studio cria as palavras do texto para correção manual. O reconhecimento automático da narração está na app móvel, descrito em [OFFLINE_AI.md](OFFLINE_AI.md).
 
 ### Editor
 
@@ -106,9 +93,9 @@ Cobertura automatizada em `StudioAlignmentServiceTest`: quatro objectos de palav
 
 **PASS WITH ISSUES**
 
-Comprovado em testes: quatro palavras de «Olá um dois três»; correção de REVIEW; persistência; silêncio; texto diferente; omissões/repetidas; falha do motor; forma de onda de 12 s; JSON do whisper-cli; execução real de `whisper-cli.exe` sobre silêncio (1,2 s, sem crash).
+Comprovado em testes: quatro palavras de «Olá um dois três»; correção de REVIEW; persistência; silêncio; texto diferente; omissões/repetidas; falha do motor; forma de onda de 12 s.
 
-Não comprovado em sessão pedagógica completa: narração longa ao vivo, destaque visual ouvido pelo professor, arrastar marcadores na UI, whisper-tiny a reconhecer as quatro palavras de uma voz real, instalação MSI noutro PC offline.
+Não comprovado em sessão pedagógica completa: narração longa ao vivo, destaque visual ouvido pelo professor, arrastar marcadores na UI, instalação MSI noutro PC offline.
 
 A Fase 6 (formato `.lsb`) está documentada em [lsb-format.md](lsb-format.md).
 

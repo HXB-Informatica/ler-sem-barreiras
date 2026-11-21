@@ -28,8 +28,8 @@ export function AboutScreen({ onBack }: Props) {
           Não existem contas, publicidade, analytics nem envio de dados de alunos para o exterior.
         </Text>
         <Text style={styles.p}>
-          A sincronização automática corre no próprio tablet com whisper.cpp (MIT) e o modelo
-          Whisper tiny. Não envia áudio para a Internet.
+          A sincronização automática corre no próprio tablet com o EBranch-w2vBERT2-EP
+          (CAMÕES, CC-BY-4.0). Não envia áudio para a Internet.
         </Text>
       </ScrollView>
     </SafeAreaView>

@@ -13,7 +13,7 @@ Motivos, cruzados com a auditoria:
 - A futura app Windows prevista (Compose Desktop / JVM) partilha o **mesmo bytecode JVM** que `:core` e `:alignment` já usavam.
 - O tokenizador depende de `java.text.Normalizer` e `Locale("pt","PT")`, APIs JVM/Android. Colocá-las em `commonMain` exigiria `expect/actual` sem ganho para Android+Windows.
 - Os módulos Android já consomem bibliotecas `kotlin("jvm")` sem `androidTarget()`. Introduzir KMP com alvo Android no mesmo grafo AGP 8.7.3 aumentaria o risco de regressão sem benefício imediato.
-- O reconhecimento (JNI whisper.cpp) e o Media3 continuam específicos de plataforma, como na auditoria.
+- O reconhecimento e o Media3 continuam específicos de plataforma.
 
 O módulo `:shared` é **Kotlin/JVM 17**, o mesmo contrato que um alvo `jvm()` de KMP. Uma conversão KMP posterior pode copiar `src/main` para `commonMain`/`jvmMain` sem mudar os pacotes.
 
@@ -26,7 +26,7 @@ O módulo `:shared` é **Kotlin/JVM 17**, o mesmo contrato que um alvo `jvm()` d
 Android   adaptadores (FileAudioSource, ContentPlayer, ContentRepository)
 ```
 
-Transcrição (`SpeechRecognitionEngine` / whisper.cpp) **não** entrou em `:shared`. O `TeacherEditViewModel` transcreve primeiro e só depois chama `AlignmentEngine.align(AlignmentRequest)`.
+A transcrição **não** entrou em `:shared`. O `TeacherEditViewModel` transcreve primeiro e só depois chama `AlignmentEngine.align(AlignmentRequest)`.
 
 ### Contratos (independentes de Android)
 
@@ -86,7 +86,7 @@ A UI Compose não foi reescrita: o modo professor/aluno usa os mesmos ecrãs, ag
 ## Limitações
 
 - Sem app Windows nesta fase.
-- Sem JNI/Whisper no módulo partilhado; a transcrição continua Android.
+- Sem código nativo de reconhecimento no módulo partilhado; a transcrição continua na aplicação.
 - Sem KMP `commonMain`.
 - Importação estéreo via MediaCodec e o salto de `currentWordIndex` nas pausas **não** foram corrigidos (fora do critério da Fase 2).
 - Não há testes instrumentados nem dispositivo ligado; a compilação Android é o proxy de «o APK anterior continua a construir».
@@ -118,6 +118,6 @@ Não executado: app no tablet/emulador (`adb devices` vazio na Fase 1; não repe
 
 O núcleo partilhado está funcional, com contratos de plataforma, alinhamento que materializa todas as palavras do texto, preservação de correções MANUAL/VERIFIED, migração aditiva do JSON v1 e APK debug gerado.
 
-**PASS WITH ISSUES** — issues: KMP completo não foi introduzido (Kotlin/JVM documentado como via correcta para Android + Windows JVM); funcionalidades anteriores não foram reexercidas num dispositivo; Whisper/JNI continua só no Android.
+**PASS WITH ISSUES** — issues: KMP completo não foi introduzido (Kotlin/JVM documentado como via correcta para Android + Windows JVM); funcionalidades anteriores não foram reexercidas num dispositivo.
 
 A Fase 3 não foi iniciada.

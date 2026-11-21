@@ -12,7 +12,7 @@ Cobertura inicial, sem gravar vozes de crianças:
 - editor visual: frase «Olá um dois três», persistência MANUAL/VERIFIED, undo, palavras repetidas, pausas e sobreposições (`SyncEditorTest`)
 - forma de onda com número fixo de picos em gravação longa (`WaveformExtractorTest`)
 - Studio Windows: WAV em fluxo (incl. 3 min em disco), 24 bits no cabeçalho, clipping, projecto/autosave, cópia 16 kHz, enumeração de mixers, captura breve se existir microfone (`:studio:test`)
-- Studio sincronização: «Olá um dois três», silêncio, texto diferente, omissões/repetidas, falha do whisper-cli, forma de onda longa, JSON do whisper-cli (`StudioAlignmentServiceTest`, `WhisperJsonParserTest`)
+- Studio sincronização: «Olá um dois três», silêncio, texto diferente, omissões/repetidas, falha do motor, forma de onda longa (`StudioAlignmentServiceTest`)
 - Pacote `.lsb`: ida e volta com quatro palavras e áudio, parágrafos, checksum, versão futura, path traversal, ZIP com demasiadas entradas, importação Android sem apagar conteúdos (`LsbArchiveTest`, `ContentRepositoryTest`)
 - Laboratório sintético: `python -m unittest test-lab.tests.test_lab_unit` e `python test-lab/run.py --seed 7 --count 500 --twice` (alinhador da app, 500 casos, duas corridas)
 - Vozes reais: `python -m unittest test-lab.tests.test_realvoice` e `python test-lab/run_real.py --seed 8 --count 200 --twice` (Common Voice pt-PT, dois motores, regressão)
@@ -25,7 +25,6 @@ Executar:
 ```bash
 ./gradlew test
 ./gradlew :studio:test
-./gradlew :studio:fetchWhisperWindows
 ```
 
 ## Testes de integração

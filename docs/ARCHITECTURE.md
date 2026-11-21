@@ -33,11 +33,11 @@ A UI deixa de ser Jetpack Compose. O contrato de dados e o motor local **não** 
 | `core` | Fachada `api(:shared)` para os módulos Android. |
 | `alignment` | Fachada `api(:shared)` e testes de alinhamento. |
 | `audio` | Gravação PCM, importação, forma de onda, conversão WAV 16 kHz e reprodução Media3. |
-| `speech` | Interface do motor de fala e implementação JNI do whisper.cpp. |
+| `speech` | Interface do motor de fala. A linha 0.1 já não traz um motor. |
 | `data` | Room, ficheiros privados e pacote `content.json`. |
 | `feature-teacher` | Criação, sincronização e correção manual. |
 | `feature-reader` | Experiência do aluno e destaque sincronizado. |
-| `studio` | App Windows (Compose Desktop): captura WAV, editor de sincronização, whisper-cli nativo x64. |
+| `studio` | App Windows (Compose Desktop): captura WAV e editor de sincronização. |
 | `lab-cli` | CLI interno do alinhador para o laboratório Python. **Não** entra no APK. |
 | `test-lab` | Python interno: sintéticos (Fase 7) e vozes reais / dois motores (Fase 8). **Não** entra no APK. |
 
@@ -50,22 +50,18 @@ texto original + áudio
         ↓
 conversão interna para PCM 16 kHz mono
         ↓
-whisper.cpp (JNI na linha 0.1, whisper-cli no Studio)
-        ↓
-palavras reconhecidas com timestamps
-        ↓
 alinhamento por programação dinâmica com o texto do professor
         ↓
 WordTiming(text, startMs, endMs, confidence, manuallyAdjusted)
         ↓
-Room + contents/<id>/audio.wav + contents/<id>/content.json
+contents/<id>/audio.wav + contents/<id>/content.json
 ```
 
 A reprodução no Modo Aluno consulta `ExoPlayer.currentPosition`. Não se usa um relógio paralelo que possa acumular desvio.
 
 ## Motor de IA isolado
 
-Na linha 0.1, `SpeechRecognitionEngine` é a única API usada pela interface e a implementação é `NativeWhisperEngine`. Na app móvel 0.2 o contrato equivalente é `LsbSpeech`, com o EBranch-w2vBERT2-EP.
+Na linha 0.1, `SpeechRecognitionEngine` é a interface do motor e a implementação actual não reconhece fala. Na app móvel 0.2 o contrato equivalente é `LsbSpeech`, com o EBranch-w2vBERT2-EP.
 
 ## Persistência e formato exportável
 

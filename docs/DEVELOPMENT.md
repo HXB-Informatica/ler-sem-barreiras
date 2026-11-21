@@ -23,7 +23,7 @@ A release Android **não** declara `INTERNET`. Só a variante `debug` a inclui, 
 
 A compilação da app móvel descarrega o EBranch-w2vBERT2-EP (grafo CTC int8 e pesos) para `mobile/android/app/ctc-model/` e copia-o para os assets. Esses ficheiros não entram no Git. Ver [OFFLINE_AI.md](OFFLINE_AI.md).
 
-As instruções Gradle da linha Kotlin abaixo aplicam-se ao Studio Windows e ao código de referência 0.1.x, que sincronizam com whisper.cpp.
+As instruções Gradle da linha Kotlin abaixo aplicam-se ao Studio Windows e ao código de referência 0.1.x.
 
 ## Requisitos de compilação (Kotlin 0.1.x)
 
@@ -31,7 +31,7 @@ As instruções Gradle da linha Kotlin abaixo aplicam-se ao Studio Windows e ao 
 - Android SDK (compileSdk 35, build-tools 35)
 - NDK 27.2.12479018
 - CMake 3.22.1
-- Ligação à Internet **apenas na máquina de compilação**, para o Gradle, o whisper.cpp e o modelo GGML
+- Ligação à Internet **apenas na máquina de compilação**, para o Gradle e para o modelo da app móvel
 
 A aplicação gerada não precisa de Internet.
 
@@ -43,31 +43,10 @@ A aplicação gerada não precisa de Internet.
 ./gradlew :studio:run
 ./gradlew :studio:createDistributable
 ./gradlew :studio:packageMsi
-./gradlew :studio:fetchWhisperWindows
 ./gradlew :lab-cli:installDist
 python test-lab/run.py --seed 7 --count 500 --twice
 python test-lab/run_real.py --seed 8 --count 200 --twice
 ```
-
-Tarefas úteis do módulo `speech`:
-
-- `fetchWhisperCpp` — obtém whisper.cpp `v1.9.5`
-- `fetchWhisperModel` — obtém `ggml-base.bin` (ou outro, via `-PwhisperModel=`)
-
-Os artefactos descarregados ficam em:
-
-- `speech/src/main/cpp/third_party/whisper.cpp/`
-- `speech/src/main/assets/models/`
-
-Ambos estão no `.gitignore`. Não os publique no Git.
-
-## Modelo alternativo
-
-```bash
-./gradlew :app:assembleDebug -PwhisperModel=ggml-tiny.bin
-```
-
-Use apenas variantes **multilingues**. Não utilize modelos `.en`.
 
 ## Estrutura Gradle
 
@@ -126,7 +105,7 @@ git tag -a v0.1.1 -m "Ler sem Barreiras v0.1.1"
 git push origin v0.1.1
 ```
 
-5. O workflow **Android CI** corre testes, gera o APK, verifica o modelo Whisper e a biblioteca JNI, calcula o SHA-256 e cria a Release.
+5. O workflow **Android CI** corre testes, gera o APK, calcula o SHA-256 e cria a Release.
 6. Tags com `beta`, `rc`, `alpha` ou `preview` são publicadas como *Pre-release*.
 
 Se a Release da tag já existir, o workflow não substitui artefactos. Não reutilize uma tag já publicada para um APK diferente.

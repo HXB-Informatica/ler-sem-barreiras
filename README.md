@@ -108,7 +108,7 @@ No Windows (PowerShell):
 .\gradlew.bat :app:assembleDebug
 ```
 
-A primeira compilação da app móvel descarrega o grafo CTC int8 e os pesos do EBranch-w2vBERT2-EP. Estas transferências ocorrem **só na máquina de compilação**, nunca na aplicação instalada. O Studio Windows descarrega à parte o whisper.cpp usado nessa ferramenta.
+A primeira compilação da app móvel descarrega o grafo CTC int8 e os pesos do EBranch-w2vBERT2-EP. Estas transferências ocorrem **só na máquina de compilação**, nunca na aplicação instalada.
 
 ## Documentação
 

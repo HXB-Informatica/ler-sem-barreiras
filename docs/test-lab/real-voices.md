@@ -14,8 +14,8 @@ Prefira o corpus oficial (`validated.tsv` + `clips/`) com o campo `variant=pt-PT
 
 | Motor | O que é | Independência |
 | --- | --- | --- |
-| Actual | `whisper-cli` (`-l pt`, prompt = texto) + `DefaultAlignmentEngine` via `:lab-cli` | O da aplicação |
-| MFA | Montreal Forced Aligner + modelo português, se `mfa` estiver instalado | Preferido; Kaldi, sem Whisper |
+| Actual | `DefaultAlignmentEngine` via `:lab-cli` | O da aplicação |
+| MFA | Montreal Forced Aligner + modelo português, se `mfa` estiver instalado | Preferido |
 | `energy_dtw` | Energia RMS + DTW de durações ortográficas | Usado quando MFA não está no PATH. Não é fonética; justifica-se para validação cruzada em Windows sem Conda/Kaldi |
 
 Verificações de fala/silêncio são um **terceiro** sinal (RMS), não um dos dois alinhadores.

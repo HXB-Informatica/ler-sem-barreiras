@@ -17,8 +17,6 @@ captures/
 *.class
 
 # Native / third-party fetch (obtained at build time, not versioned)
-speech/src/main/cpp/third_party/whisper.cpp/
-mobile/android/whisper/src/main/cpp/third_party/whisper.cpp/
 **/src/main/assets/models/*.bin
 **/src/main/assets/models/*.gguf
 mobile/android/app/src/main/assets/ctc/model.int8.onnx

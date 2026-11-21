@@ -60,12 +60,6 @@ fun AboutScreen(onBack: () -> Unit) {
                 modifier = Modifier.padding(top = 12.dp),
             )
             Text(
-                "O reconhecimento de voz local utiliza whisper.cpp (licença MIT) e modelos Whisper " +
-                    "multilingues da OpenAI (licença MIT), empacotados para execução no dispositivo.",
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(top = 12.dp),
-            )
-            Text(
                 "Os direitos de autor sobre o código pertencem aos respetivos autores e colaboradores, " +
                     "licenciados nos termos da GNU GPL v3.0. Não se presume qualquer cessão de direitos " +
                     "ainda não formalizada.",
