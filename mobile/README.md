@@ -12,6 +12,14 @@ A **release** da app instalada **não** tem permissão `INTERNET`. As builds de 
 
 ## Comandos
 
+Iteração rápida no emulador (SDK, `LerTablet`, Metro, Fast Refresh):
+
+```bash
+./scripts/dev-android.sh
+```
+
+Ou, a partir de `mobile/`: `npm run dev`. Ctrl+C pára o Metro; o emulador fica a correr.
+
 ```powershell
 cd mobile
 npm install

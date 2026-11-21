@@ -95,6 +95,9 @@ export function TeacherListScreen({ repository, onBack, onCreate, onOpen }: Prop
               style={styles.card}>
               <View style={styles.cardBody}>
                 <Text style={styles.cardTitle}>{item.title}</Text>
+                <Text style={styles.meta}>
+                  {item.audioRelativePath ? `Narração ${formatDuration(item.durationMs)}` : 'Sem narração'}
+                </Text>
                 <Text style={styles.meta}>{syncLabel(item.syncStatus)}</Text>
                 <Text style={styles.meta}>{formatDate(item.updatedAtEpochMs)}</Text>
               </View>
@@ -106,6 +109,13 @@ export function TeacherListScreen({ repository, onBack, onCreate, onOpen }: Prop
       )}
     </SafeAreaView>
   );
+}
+
+function formatDuration(durationMs: number): string {
+  const total = Math.max(0, Math.round(durationMs / 1000));
+  const minutes = Math.floor(total / 60);
+  const seconds = total % 60;
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
 function formatDate(epochMs: number): string {

@@ -4,6 +4,14 @@
 
 A partir de **v0.2.0** o desenvolvimento activo da app móvel é em React Native, pasta [`mobile/`](../mobile). Ver [adr/0001-migrar-para-react-native.md](adr/0001-migrar-para-react-native.md) e [releases/v0.2.0.md](releases/v0.2.0.md).
 
+```bash
+./scripts/dev-android.sh
+```
+
+Isto arranca o AVD `LerTablet` se ainda não estiver a correr, instala dependências npm, sobe o Metro e instala a app. A gravação no emulador usa o microfone do computador (`scripts/host-mic.py`, porta 27183), porque o gravador do Android no emulador fica em silêncio. Depois disso, gravar um ficheiro em `mobile/` actualiza o ecrã (Fast Refresh). Ctrl+C pára o Metro; o emulador continua.
+
+Passos manuais:
+
 ```powershell
 cd mobile
 npm install

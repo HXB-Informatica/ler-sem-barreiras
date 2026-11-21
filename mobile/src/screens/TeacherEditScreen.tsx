@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { align } from '../core/alignmentEngine';
@@ -40,6 +40,8 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [createdAt, setCreatedAt] = useState(Date.now());
   const [playing, setPlaying] = useState(false);
+  const busy = useRef(false);
+  const stopping = useRef(false);
 
   const load = useCallback(async () => {
     if (!contentId) {
@@ -60,6 +62,30 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
   useEffect(() => {
     load().catch(err => setError(messageOf(err)));
   }, [load]);
+
+  useEffect(() => {
+    return () => {
+      audioBridge.stopRecording().catch(() => undefined);
+      audioBridge.stop().catch(() => undefined);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!playing) {
+      return;
+    }
+    const timer = setInterval(() => {
+      audioBridge
+        .status()
+        .then(status => {
+          if (!status.playing) {
+            setPlaying(false);
+          }
+        })
+        .catch(() => undefined);
+    }, 200);
+    return () => clearInterval(timer);
+  }, [playing]);
 
   const current = (): ReadingContent => ({
     id,
@@ -91,8 +117,13 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
   };
 
   const toggleRecord = async () => {
+    if (busy.current) {
+      return;
+    }
+    busy.current = true;
     try {
       if (recording) {
+        stopping.current = true;
         const result = await audioBridge.stopRecording();
         setRecording(false);
         setDurationMs(result.durationMs);
@@ -105,6 +136,8 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
         setError('É necessária permissão de microfone para gravar.');
         return;
       }
+      stopping.current = false;
+      await audioBridge.stop().catch(() => undefined);
       await audioBridge.startRecording(`contents/${id}/audio.wav`);
       setRecording(true);
       setMessage('A gravar neste tablet. Fale o texto e veja o gráfico a mexer.');
@@ -112,6 +145,8 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
     } catch (err) {
       setRecording(false);
       setError(messageOf(err));
+    } finally {
+      busy.current = false;
     }
   };
 
@@ -157,7 +192,21 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
       }
       await audioBridge.play(`contents/${id}/audio.wav`);
       setPlaying(true);
+      setError(null);
     } catch (err) {
+      setPlaying(false);
+      setError(messageOf(err));
+    }
+  };
+
+  const restartPlayback = async () => {
+    try {
+      await audioBridge.seek(0);
+      await audioBridge.play(`contents/${id}/audio.wav`);
+      setPlaying(true);
+      setError(null);
+    } catch (err) {
+      setPlaying(false);
       setError(messageOf(err));
     }
   };
@@ -232,7 +281,7 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
           <View style={styles.flex}>
             <Button
               label="Recomeçar"
-              onPress={() => audioBridge.seek(0).then(() => audioBridge.play(`contents/${id}/audio.wav`))}
+              onPress={restartPlayback}
               disabled={!hasAudio}
               variant="secondary"
             />

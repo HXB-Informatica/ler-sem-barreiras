@@ -23,7 +23,8 @@ export function RecordingMeter({ recording }: Props) {
     }
     startedAt.current = Date.now();
     const pushLevel = (rms: number, peak: number, nativeElapsed?: number) => {
-      const amplitude = Math.min(1, Math.max(peak * 0.85, rms * 3.2, 0.12));
+      // O emulador entrega o HyperX muito baixo (~5 % da escala). Sem este ganho as barras ficam paradas.
+      const amplitude = Math.min(1, Math.max(peak * 14, rms * 36, 0.08));
       setElapsedMs(nativeElapsed && nativeElapsed > 0 ? nativeElapsed : Date.now() - startedAt.current);
       setBars(previous => [...previous.slice(1), amplitude]);
     };
