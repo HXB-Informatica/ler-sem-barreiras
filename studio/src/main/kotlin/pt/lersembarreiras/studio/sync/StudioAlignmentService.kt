@@ -51,7 +51,7 @@ class StudioAlignmentService(
         )
         val message = when {
             asr.engineAvailable.not() || asr.error != null ->
-                (asr.error ?: WhisperRuntime.status()) +
+                (asr.error ?: "O reconhecimento local não está disponível.") +
                     " O alinhamento criou as palavras do texto para correção manual."
             transcription.words.isEmpty() ->
                 "O motor local não reconheceu fala. As palavras ficaram por alinhar."

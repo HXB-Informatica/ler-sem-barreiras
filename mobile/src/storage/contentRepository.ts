@@ -44,7 +44,10 @@ export class ContentRepository {
   async listReadyForStudent(): Promise<ReadingContent[]> {
     const all = await this.list();
     return all.filter(
-      item => item.syncStatus === 'COMPLETED' || item.syncStatus === 'COMPLETED_WITH_GAPS',
+      item =>
+        item.audioRelativePath != null ||
+        item.syncStatus === 'COMPLETED' ||
+        item.syncStatus === 'COMPLETED_WITH_GAPS',
     );
   }
 

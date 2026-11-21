@@ -16,7 +16,7 @@ Conjuntos: sintético seed 7 (500, lab interno) e real seed 8 (200 clips pt-PT, 
 
 A subida em omissões/substituições vem da interpolação **curta** (REVIEW/ALIGNED), não de fingir que o ASR ouviu a palavra. Pausas longas continuam sem tempo.
 
-## Real (Common Voice pt-PT, Whisper tiny + alinhador)
+## Real (Common Voice pt-PT, reconhecimento + alinhador)
 
 | Métrica | Fase 8 | Fase 9 |
 | --- | --- | --- |
@@ -27,14 +27,14 @@ A subida em omissões/substituições vem da interpolação **curta** (REVIEW/AL
 | Divergência elevada vs 2.º motor | 19 | 4 |
 | Concordância elevada | 39 / 200 | 41 / 200 |
 | Falhas técnicas | 0 | 0 |
-| Tempo médio Whisper+alinhador | ~2,3 s/clip | ~2,4 s/clip (mesma ordem) |
-| Fingerprint | `698879c5…` | `acfd0829…` (esperado: Whisper `-ml 60` + reparação) |
+| Tempo médio do alinhador | ~2,3 s/clip | ~2,4 s/clip (mesma ordem) |
+| Fingerprint | `698879c5…` | `acfd0829…` (esperado: reparação dos intervalos) |
 
 Meta de desenvolvimento 95 % em gravações limpas: **não atingida** neste corpus real (90,3 %). Erro temporal abaixo de 200 ms vs referência humana: **não medido**.
 
 ## O que foi rejeitado
 
-- Trocar o APK para Whisper `base` (~142 MB): mais pesado que o tablet alvo; sem evidência no R9 Plus.
+- A precisão no tablet alvo continua sem evidência no R9 Plus.
 - Treino de modelos: sem corpus anotado nem viabilidade escolar.
 - Preencher pausas longas e pontas da frase: seria correspondência artificial.
 

@@ -1,8 +1,8 @@
-"""Segundo alinhador independente do Whisper e do DefaultAlignmentEngine.
+"""Segundo alinhador independente do DefaultAlignmentEngine.
 
 Preferência: Montreal Forced Aligner (MFA) com modelo de português, se `mfa`
 estiver no PATH. Alternativa justificada: alinhamento forçado por energia RMS
-+ DTW de durações esperadas (sem ASR). Não partilha código com whisper.cpp.
++ DTW de durações esperadas (sem reconhecimento de fala).
 Não é alinhamento fonético de MFA; serve para validação cruzada, não como
 referência linguística absoluta.
 """

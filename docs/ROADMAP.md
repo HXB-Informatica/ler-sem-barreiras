@@ -7,7 +7,7 @@ Decisão aceite em [adr/0001-migrar-para-react-native.md](adr/0001-migrar-para-r
 A app móvel Kotlin 0.1.x não está a funcionar correctamente; o desenvolvimento activo passa para React Native.
 
 - Scaffold em `mobile/` (React Native 0.88): ecrãs, persistência, `.lsb`, alinhador, áudio PCM
-- Ligar whisper.cpp ao `LsbSpeechModule` (ainda em falta)
+- Sincronização no tablet com o EBranch-w2vBERT2-EP (cabeça CTC, ONNX int8) dentro do APK
 - Sem `INTERNET` na release, sem nuvem, mesma GPL-3.0-only
 - Validação obrigatória no HOTWAV TAB R9 Plus em modo avião antes de pre-release instalável
 
@@ -16,14 +16,14 @@ A app móvel Kotlin 0.1.x não está a funcionar correctamente; o desenvolviment
 Última publicação instalável: **v0.1.1-beta** (`versionName` 0.1.1, `versionCode` 2).
 
 - Fundação do repositório público e da licença GPL-3.0-only
-- App Android Compose, Studio Windows, whisper.cpp JNI, alinhador, laboratórios 7–9
+- App Android Compose, Studio Windows, alinhador, laboratórios 7–9
 - Correção da gravação na 0.1.1
 - **Não** continua como base da app móvel. O código serve de referência de formatos e do Studio.
 
 ## v0.2.x — qualidade no equipamento de referência (depois da paridade RN)
 
 - *Benchmarks* reais no HOTWAV TAB R9 Plus
-- Comparação empírica de modelos Whisper no dispositivo
+- Medição do EBranch-w2vBERT2-EP no dispositivo de referência
 - Serviço em primeiro plano para sincronizações longas
 - Exportação/importação de pacotes entre tablets da escola, sem nuvem
 

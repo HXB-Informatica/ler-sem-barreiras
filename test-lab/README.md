@@ -46,6 +46,6 @@ Por omissão tenta um parquet derivado de Common Voice (só em `test-lab/work/`,
 python test-lab/run_real.py --cv-root C:\dados\cv-corpus-27.0-pt --seed 8 --count 200 --twice
 ```
 
-O importador filtra `variant=pt-PT` ou sotaques claramente europeus e **exclui** pt-BR. Locutores vão para `dev`/`eval` por hash anónimo. O motor actual é whisper-cli + `DefaultAlignmentEngine`. O segundo é MFA se existir `mfa` no PATH; senão, alinhamento forçado por energia (independente do Whisper). A concordância **não** é precisão comprovada.
+O importador filtra `variant=pt-PT` ou sotaques claramente europeus e **exclui** pt-BR. Locutores vão para `dev`/`eval` por hash anónimo. O segundo motor é MFA se existir `mfa` no PATH; senão, alinhamento forçado por energia. A concordância **não** é precisão comprovada.
 
 Metodologia: [docs/test-lab/real-voices.md](../docs/test-lab/real-voices.md).

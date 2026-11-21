@@ -15,7 +15,6 @@ from cv_import import anonymize_speaker, is_european_portuguese, select_sample, 
 from regression import diff_runs, fingerprint  # noqa: E402
 from second_aligner import energy_dtw_align, parse_textgrid_words  # noqa: E402
 from vad import speech_intervals_ms  # noqa: E402
-from whisper_engine import parse_whisper_json  # noqa: E402
 
 
 class RealVoiceTests(unittest.TestCase):
@@ -87,7 +86,7 @@ class RealVoiceTests(unittest.TestCase):
         self.assertTrue(comparison["invalid_b"])
         labels = classify_case(comparison, None, None)
         self.assertEqual("intervalo_invalido", labels["primary"])
-        fail = classify_case(comparison, "whisper down", None)
+        fail = classify_case(comparison, "motor em baixo", None)
         self.assertEqual("falha_tecnica", fail["primary"])
 
     def test_technical_failure_does_not_use_agreement_label(self):
@@ -101,11 +100,7 @@ class RealVoiceTests(unittest.TestCase):
         }
         self.assertEqual("falha_tecnica", classify_case(comparison, "boom", None)["primary"])
 
-    def test_whisper_json_and_textgrid_parsers(self):
-        words = parse_whisper_json(
-            '{"transcription":[{"text":" Olá","offsets":{"from":40,"to":280}},{"text":" um dois","offsets":{"from":300,"to":900}}]}'
-        )
-        self.assertGreaterEqual(len(words), 3)
+    def test_textgrid_parser(self):
         grid = """
         item [1]:
         class = "IntervalTier"

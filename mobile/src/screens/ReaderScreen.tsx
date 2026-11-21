@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { PresentationMode, ReadingContent } from '../core/models';
 import { currentWordIndex } from '../core/timeValidator';
@@ -33,6 +33,12 @@ export function ReaderScreen({ repository, contentId, onBack }: Props) {
   }, [contentId, repository]);
 
   useEffect(() => {
+    return () => {
+      audioBridge.stop().catch(() => undefined);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!playing) {
       return;
     }
@@ -61,8 +67,14 @@ export function ReaderScreen({ repository, contentId, onBack }: Props) {
     if (!content?.audioRelativePath) {
       return;
     }
-    await audioBridge.play(content.audioRelativePath);
-    setPlaying(true);
+    try {
+      await audioBridge.play(content.audioRelativePath);
+      setPlaying(true);
+    } catch (error) {
+      setPlaying(false);
+      setMissingAudio(true);
+      Alert.alert('Narração', error instanceof Error ? error.message : 'Não foi possível ouvir a narração.');
+    }
   };
 
   const pause = async () => {
@@ -157,6 +169,11 @@ function ReadingSurface({
   highlight: string;
 }) {
   const words = content.words;
+  if (words.length === 0) {
+    return (
+      <Text style={{ color: foreground, fontSize, lineHeight: fontSize * 1.45 }}>{content.text}</Text>
+    );
+  }
   if (mode === 'SINGLE_WORD') {
     const word = words[Math.max(0, currentIndex)]?.text ?? content.text;
     return (

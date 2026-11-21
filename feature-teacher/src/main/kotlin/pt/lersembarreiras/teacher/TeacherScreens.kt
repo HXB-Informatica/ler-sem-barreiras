@@ -303,7 +303,7 @@ fun TeacherEditScreen(
             state.usedTokenTimestamps?.let { used ->
                 Text(
                     if (used) {
-                        "O motor local devolveu marcas temporais ao nível de palavras (funcionalidade experimental do whisper.cpp)."
+                        "O motor local devolveu marcas temporais ao nível de palavras."
                     } else {
                         "As marcas temporais de palavras não estavam disponíveis; reveja os tempos assinalados."
                     },

@@ -13,8 +13,7 @@ Requisitos de compilação: [DEVELOPMENT.md](DEVELOPMENT.md). Tablet de referên
 
 ## Ler sem Barreiras Studio (Windows)
 
-1. `.\gradlew.bat :studio:fetchWhisperWindows`
-2. `.\gradlew.bat :studio:run` ou `:studio:createDistributable`
+1. `.\gradlew.bat :studio:run` ou `:studio:createDistributable`
 3. Microfone USB: gravar WAV 16 kHz, sincronizar, corrigir no editor, guardar o projecto, exportar `.lsb`.
 4. Sem Internet em tempo de execução.
 
@@ -33,5 +32,5 @@ Common Voice: `--cv-root` com `validated.tsv` e `clips/`, ou o parquet local em 
 
 - Licença: GPL-3.0-only (`LICENSE`).
 - Código em Git; Releases só **depois** de validação e autorização explícita (não nesta fase).
-- Não versionar modelos GGML, whisper-cli, áudios de terceiros nem keystores.
+- Não versionar modelos, áudios de terceiros nem keystores.
 - Contribuições: [CONTRIBUTING.md](../CONTRIBUTING.md). Conduta: [CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md).

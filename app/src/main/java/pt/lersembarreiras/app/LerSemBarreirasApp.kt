@@ -10,8 +10,8 @@ import pt.lersembarreiras.audio.ContentPlayer
 import pt.lersembarreiras.data.ContentRepository
 import pt.lersembarreiras.data.ContentRepositoryFactory
 import pt.lersembarreiras.shared.AlignmentEngine
-import pt.lersembarreiras.speech.NativeWhisperEngine
 import pt.lersembarreiras.speech.SpeechRecognitionEngine
+import pt.lersembarreiras.speech.UnavailableSpeechEngine
 
 class LerSemBarreirasApp : Application() {
     lateinit var container: AppContainer
@@ -27,7 +27,7 @@ class AppContainer(private val app: Application) {
     val pendingLsbUri = MutableStateFlow<Uri?>(null)
     val repository: ContentRepository = ContentRepositoryFactory.create(app)
     val aligner: AlignmentEngine = DefaultAlignmentEngine()
-    val speechEngine: SpeechRecognitionEngine = NativeWhisperEngine(app)
+    val speechEngine: SpeechRecognitionEngine = UnavailableSpeechEngine()
     fun newRecorder() = AudioRecorder()
     fun newImporter() = AudioImporter(app)
     fun newPlayer() = ContentPlayer(app)

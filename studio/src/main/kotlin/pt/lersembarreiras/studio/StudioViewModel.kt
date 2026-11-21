@@ -26,8 +26,7 @@ import pt.lersembarreiras.studio.audio.DesktopAudioImport
 import pt.lersembarreiras.studio.audio.DesktopWaveform
 import pt.lersembarreiras.studio.audio.WaveformPeaks
 import pt.lersembarreiras.studio.sync.StudioAlignmentService
-import pt.lersembarreiras.studio.sync.WhisperCliEngine
-import pt.lersembarreiras.studio.sync.WhisperRuntime
+import pt.lersembarreiras.studio.sync.MissingTranscriber
 import pt.lersembarreiras.studio.audio.AudioDevices
 import pt.lersembarreiras.studio.audio.DesktopPlayer
 import pt.lersembarreiras.studio.audio.DesktopRecorder
@@ -71,7 +70,7 @@ data class StudioUiState(
     val looping: Boolean = false,
     val syncing: Boolean = false,
     val syncProgress: Float = 0f,
-    val whisperStatus: String = WhisperRuntime.status(),
+    val speechStatus: String = "O reconhecimento local não está incluído nesta versão.",
 ) {
     val selectedDevice: AudioDevice? get() = devices.firstOrNull { it.id == selectedDeviceId }
 }
@@ -81,8 +80,8 @@ class StudioViewModel(
     private val recorder: DesktopRecorder = DesktopRecorder(),
     private val player: DesktopPlayer = DesktopPlayer(),
     private val monitor: InputMonitor = InputMonitor(),
-    private val whisper: WhisperCliEngine = WhisperCliEngine(),
-    private val alignment: StudioAlignmentService = StudioAlignmentService(whisper),
+    private val speech: MissingTranscriber = MissingTranscriber(),
+    private val alignment: StudioAlignmentService = StudioAlignmentService(speech),
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val _state = MutableStateFlow(StudioUiState())
@@ -419,7 +418,7 @@ class StudioViewModel(
                     syncing = false,
                     syncProgress = 1f,
                     editor = loaded,
-                    whisperStatus = WhisperRuntime.status(),
+                    speechStatus = "O reconhecimento local não está incluído nesta versão.",
                     message = result.engineMessage ?: when (result.alignment.status) {
                         SyncStatus.COMPLETED -> "Sincronização concluída."
                         SyncStatus.COMPLETED_WITH_GAPS ->
@@ -434,7 +433,7 @@ class StudioViewModel(
 
     fun cancelSynchronize() {
         cancelSync = true
-        whisper.cancel()
+        speech.cancel()
     }
 
     fun selectWord(index: Int) {
@@ -632,7 +631,7 @@ class StudioViewModel(
                 capture = project.capture,
                 originalProps = original.takeIf { file -> file.exists() }?.let { file -> describe(file, project.capture) },
                 editor = editorState,
-                whisperStatus = WhisperRuntime.status(),
+                speechStatus = "O reconhecimento local não está incluído nesta versão.",
                 error = null,
             )
         }

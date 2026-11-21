@@ -144,7 +144,7 @@ class StudioAlignmentServiceTest {
     fun engineFailureStillCreatesEditableWords() {
         val service = StudioAlignmentService(
             LocalTranscriber { _, _, _, _ ->
-                TranscriptionOutcome(error = "whisper-cli ausente", engineAvailable = false)
+                TranscriptionOutcome(error = "motor ausente", engineAvailable = false)
             },
         )
         val wav = wav()

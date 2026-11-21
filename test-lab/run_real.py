@@ -34,7 +34,6 @@ from memory import memory_note  # noqa: E402
 from report_real import write_reports  # noqa: E402
 from run import gradle_install, run_aligner  # noqa: E402
 from second_aligner import align_second, mfa_available  # noqa: E402
-from whisper_engine import transcribe_wav  # noqa: E402
 
 
 def _label_counts(rows: list[dict]) -> dict:
@@ -94,21 +93,7 @@ def prepare_clip(item: dict, index: int, work: Path) -> dict:
     except Exception as error:  # noqa: BLE001
         prepared["error_a"] = prepared["error_b"] = f"normalização: {error}"
         return prepared
-    try:
-        recognized, whisper_err, whisper_s = transcribe_wav(wav, item["sentence"], work / "whisper" / case_id)
-        prepared["elapsed_a_ms"] += whisper_s * 1000
-        if whisper_err:
-            prepared["error_a"] = whisper_err
-        else:
-            prepared["recognized"] = recognized
-            prepared["request"] = {
-                "id": case_id,
-                "text": item["sentence"],
-                "audioDurationMs": prepared["duration_ms"],
-                "recognized": recognized,
-            }
-    except Exception as error:  # noqa: BLE001
-        prepared["error_a"] = f"motor actual: {error}"
+    prepared["error_a"] = "O reconhecimento local foi retirado deste laboratório."
     try:
         engine_b, second_name, warn, dt = align_second(wav, prepared["pcm"], prepared["rate"], item["sentence"])
         prepared["engine_b"] = engine_b
@@ -313,7 +298,7 @@ def main() -> int:
             return 2
         if summary_a["fingerprint"] != summary_b["fingerprint"]:
             print(
-                "AVISO: o motor actual (Whisper) não foi bit-a-bit idêntico nas duas corridas; "
+                "AVISO: o motor actual não foi bit-a-bit idêntico nas duas corridas; "
                 "o segundo motor foi reproduzível.",
                 file=sys.stderr,
             )

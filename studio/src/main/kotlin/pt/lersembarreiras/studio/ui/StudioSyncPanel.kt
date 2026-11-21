@@ -62,7 +62,7 @@ fun StudioSyncPanel(
     looping: Boolean,
     syncing: Boolean,
     syncProgress: Float,
-    whisperStatus: String,
+    speechStatus: String,
     onSelect: (Int) -> Unit,
     onSeek: (Long) -> Unit,
     onIntervalChange: (Long, Long) -> Unit,
@@ -88,7 +88,7 @@ fun StudioSyncPanel(
     val verified = editor.words.count { it.resolvedState() == WordState.VERIFIED }
     Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
         Text("Sincronização áudio / texto", style = MaterialTheme.typography.titleLarge)
-        Text(whisperStatus, style = MaterialTheme.typography.bodyMedium)
+        Text(speechStatus, style = MaterialTheme.typography.bodyMedium)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             Button(onClick = onSynchronize, enabled = !syncing) { Text("Sincronizar localmente") }
             if (syncing) {

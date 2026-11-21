@@ -116,6 +116,9 @@ export function alignTokens(
       return unmatched(token, index);
     }
     const rec = prepared[recognizedIndex];
+    if (rec.endMs <= rec.startMs) {
+      return unmatched(token, index);
+    }
     const sim = similarity(token.normalized, normalizedRecognized[recognizedIndex].text);
     const confidence = Math.min(1, Math.max(0, rec.probability * (sim / MATCH_SCORE)));
     const review = confidence < MIN_CONFIDENCE || sim < MATCH_SCORE;
