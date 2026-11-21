@@ -3,6 +3,7 @@ package pt.lersembarreiras.data
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.encodeToString
+import pt.lersembarreiras.alignment.WordIdentity
 import pt.lersembarreiras.core.model.ReadingContent
 import pt.lersembarreiras.core.model.SyncStatus
 import pt.lersembarreiras.core.model.WordTiming
@@ -26,7 +27,7 @@ data class ContentEntity(
         text = text,
         audioRelativePath = audioRelativePath,
         durationMs = durationMs,
-        words = ContentPackageMapper.json.decodeFromString<List<WordTiming>>(wordsJson),
+        words = WordIdentity.ensure(text, ContentPackageMapper.json.decodeFromString<List<WordTiming>>(wordsJson)),
         syncStatus = SyncStatus.valueOf(syncStatus),
         createdAtEpochMs = createdAtEpochMs,
         updatedAtEpochMs = updatedAtEpochMs,
@@ -39,7 +40,7 @@ data class ContentEntity(
             text = content.text,
             audioRelativePath = content.audioRelativePath,
             durationMs = content.durationMs,
-            wordsJson = ContentPackageMapper.json.encodeToString(content.words),
+            wordsJson = ContentPackageMapper.json.encodeToString(WordIdentity.ensure(content.text, content.words)),
             syncStatus = content.syncStatus.name,
             createdAtEpochMs = content.createdAtEpochMs,
             updatedAtEpochMs = content.updatedAtEpochMs,

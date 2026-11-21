@@ -18,6 +18,7 @@ rootProject.name = "ler-sem-barreiras"
 
 include(
     ":app",
+    ":shared",
     ":core",
     ":alignment",
     ":audio",
@@ -25,4 +26,6 @@ include(
     ":data",
     ":feature-teacher",
     ":feature-reader",
+    ":studio",
+    ":lab-cli",
 )

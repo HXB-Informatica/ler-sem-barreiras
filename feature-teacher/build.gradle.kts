@@ -24,6 +24,7 @@ android {
 
 dependencies {
     implementation(project(":core"))
+    implementation(project(":shared"))
     implementation(project(":alignment"))
     implementation(project(":audio"))
     implementation(project(":speech"))

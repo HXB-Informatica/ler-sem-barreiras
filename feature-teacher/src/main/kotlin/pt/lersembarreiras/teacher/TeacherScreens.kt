@@ -5,7 +5,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,7 +24,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -41,7 +39,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.AlertDialog
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,7 +60,6 @@ import java.util.Date
 import java.util.Locale
 import pt.lersembarreiras.core.model.ReadingContent
 import pt.lersembarreiras.core.model.SyncStatus
-import pt.lersembarreiras.core.model.WordTiming
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,8 +68,22 @@ fun TeacherListScreen(
     onBack: () -> Unit,
     onCreate: () -> Unit,
     onOpen: (String) -> Unit,
+    pendingImportUri: android.net.Uri? = null,
+    onPendingImportConsumed: () -> Unit = {},
 ) {
     val contents by viewModel.contents.collectAsStateWithLifecycle()
+    val message by viewModel.message.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val importLsb = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let { picked ->
+            viewModel.importLsb { context.contentResolver.openInputStream(picked) }
+        }
+    }
+    LaunchedEffect(pendingImportUri) {
+        val uri = pendingImportUri ?: return@LaunchedEffect
+        viewModel.importLsb { context.contentResolver.openInputStream(uri) }
+        onPendingImportConsumed()
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -79,6 +92,12 @@ fun TeacherListScreen(
                     IconButton(onClick = onBack, modifier = Modifier.semantics { contentDescription = "Voltar" }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
                     }
+                },
+                actions = {
+                    TextButton(
+                        onClick = { importLsb.launch(arrayOf("application/zip", "application/octet-stream", "*/*")) },
+                        modifier = Modifier.semantics { contentDescription = "Importar exercício .lsb" },
+                    ) { Text("Importar .lsb") }
                 },
             )
         },
@@ -91,6 +110,16 @@ fun TeacherListScreen(
             }
         },
     ) { padding ->
+        message?.let { text ->
+            AlertDialog(
+                onDismissRequest = viewModel::consumeMessage,
+                confirmButton = {
+                    TextButton(onClick = viewModel::consumeMessage) { Text("OK") }
+                },
+                title = { Text("Importação") },
+                text = { Text(text) },
+            )
+        }
         if (contents.isEmpty()) {
             Column(
                 modifier = Modifier.fillMaxSize().padding(padding).padding(24.dp),
@@ -100,6 +129,10 @@ fun TeacherListScreen(
                 Text("Ainda não existem conteúdos neste tablet.", style = MaterialTheme.typography.headlineSmall)
                 Spacer(Modifier.height(12.dp))
                 Text("Crie um texto, grave a narração e sincronize automaticamente, tudo sem internet.")
+                Spacer(Modifier.height(16.dp))
+                Button(onClick = { importLsb.launch(arrayOf("application/zip", "application/octet-stream", "*/*")) }) {
+                    Text("Importar exercício .lsb")
+                }
             }
         } else {
             LazyColumn(
@@ -144,7 +177,6 @@ fun TeacherEditScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var pendingRecord by remember { mutableStateOf(false) }
-    var editingWord by remember { mutableStateOf<Pair<Int, WordTiming>?>(null) }
 
     val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
         uri?.let { viewModel.importAudio(it) }
@@ -280,12 +312,30 @@ fun TeacherEditScreen(
             }
             state.error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             state.savedMessage?.let { Text(it, color = MaterialTheme.colorScheme.primary) }
-            val words = state.content?.words.orEmpty()
-            if (words.isNotEmpty()) {
-                Text("Palavras sincronizadas", style = MaterialTheme.typography.titleLarge)
-                words.forEachIndexed { index, word ->
-                    WordRow(word, onClick = { editingWord = index to word }, onPlay = { viewModel.playFrom(word) })
-                }
+            if (state.editor.words.isNotEmpty()) {
+                SyncEditorPanel(
+                    sourceText = state.text,
+                    editor = state.editor,
+                    waveform = state.waveform,
+                    waveformLoading = state.waveformLoading,
+                    playbackPositionMs = state.playback?.positionMs ?: 0L,
+                    playbackSpeed = state.playbackSpeed,
+                    playingWordIndex = state.playingWordIndex,
+                    playing = state.playback?.playing == true,
+                    onSelect = viewModel::selectWord,
+                    onSeek = viewModel::seekTo,
+                    onIntervalChange = viewModel::setSelectedInterval,
+                    onNudge = viewModel::nudgeSelected,
+                    onMarkStart = viewModel::markSelectedStart,
+                    onMarkEnd = viewModel::markSelectedEnd,
+                    onVerify = viewModel::verifySelected,
+                    onUndo = viewModel::undoEdit,
+                    onRedo = viewModel::redoEdit,
+                    onPlayAll = viewModel::playAll,
+                    onPlayWord = viewModel::playSelectedWord,
+                    onPause = viewModel::togglePlayback,
+                    onSpeed = viewModel::setPlaybackSpeed,
+                )
             }
             Button(
                 onClick = viewModel::save,
@@ -295,77 +345,6 @@ fun TeacherEditScreen(
             }
         }
     }
-
-    editingWord?.let { (index, word) ->
-        WordTimingDialog(
-            word = word,
-            durationMs = state.content?.durationMs ?: 0,
-            onDismiss = { editingWord = null },
-            onSave = { start, end ->
-                viewModel.adjustWord(index, start, end)
-                editingWord = null
-            },
-        )
-    }
-}
-
-@Composable
-private fun WordRow(word: WordTiming, onClick: () -> Unit, onPlay: () -> Unit) {
-    val background = if (word.needsReview || !word.isTimed) {
-        MaterialTheme.colorScheme.errorContainer
-    } else {
-        MaterialTheme.colorScheme.surfaceVariant
-    }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(background, MaterialTheme.shapes.medium)
-            .clickable(onClick = onClick)
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(word.text, style = MaterialTheme.typography.titleMedium)
-            Text(
-                if (word.isTimed) "${word.startMs} ms – ${word.endMs} ms" else "Sem tempo fiável",
-                style = MaterialTheme.typography.bodySmall,
-            )
-            if (word.needsReview) {
-                Text("Requer revisão", style = MaterialTheme.typography.labelLarge)
-            }
-        }
-        TextButton(onClick = onPlay, enabled = word.isTimed) { Text("Ouvir") }
-    }
-}
-
-@Composable
-private fun WordTimingDialog(
-    word: WordTiming,
-    durationMs: Long,
-    onDismiss: () -> Unit,
-    onSave: (Long, Long) -> Unit,
-) {
-    var start by remember { mutableStateOf((word.startMs ?: 0L).toString()) }
-    var end by remember { mutableStateOf((word.endMs ?: (word.startMs ?: 0L) + 200).toString()) }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Corrigir «${word.text}»") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Indique o início e o fim em milissegundos. Duração do áudio: ${durationMs} ms.")
-                OutlinedTextField(value = start, onValueChange = { start = it.filter(Char::isDigit) }, label = { Text("Início (ms)") })
-                OutlinedTextField(value = end, onValueChange = { end = it.filter(Char::isDigit) }, label = { Text("Fim (ms)") })
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = {
-                val startValue = start.toLongOrNull() ?: 0L
-                val endValue = end.toLongOrNull() ?: startValue
-                onSave(startValue, endValue)
-            }) { Text("Guardar") }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } },
-    )
 }
 
 private fun syncLabel(status: SyncStatus): String = when (status) {

@@ -4,7 +4,7 @@ Obrigado por considerar contribuir para o Ler sem Barreiras. Este é um projeto 
 
 ## Antes de começar
 
-1. Leia o [README](README.md), o [código de conduta](CODE_OF_CONDUCT.md) e a [arquitetura](docs/ARCHITECTURE.md).
+1. Leia o [README](README.md), o [código de conduta](CODE_OF_CONDUCT.md), a [arquitetura](docs/ARCHITECTURE.md) e a [decisão React Native](docs/adr/0001-migrar-para-react-native.md) (v0.2.0). Contribuições novas à **app móvel** devem seguir essa linha, não alargar o Kotlin 0.1.x salvo correcções pontuais do Studio ou do formato `.lsb`.
 2. Abra uma *issue* a descrever a alteração, salvo correções óbvias.
 3. Não inclua dados de alunos, gravações reais, credenciais ou ficheiros de assinatura.
 
@@ -23,9 +23,11 @@ Qualquer contribuição deve preservar:
 Instruções em [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md). Em resumo:
 
 ```bash
-./gradlew test
-./gradlew :app:assembleDebug
+cd mobile && npm test
+cd mobile/android && ./gradlew assembleDebug
 ```
+
+A linha Kotlin 0.1.x (`./gradlew test`) permanece para o Studio e para o código de referência.
 
 ## Processo de *pull request*
 

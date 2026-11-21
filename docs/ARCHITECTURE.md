@@ -1,19 +1,45 @@
 # Arquitetura
 
-O Ler sem Barreiras é uma aplicação Android nativa, sem servidor. Toda a persistência, gravação, reconhecimento e leitura ocorrem no dispositivo.
+O Ler sem Barreiras é uma aplicação **offline, sem servidor**. Não há envio de gravações para a Internet.
 
-## Módulos
+**A partir da v0.2.0** a app móvel está em [`mobile/`](../mobile) (**React Native**, TypeScript). A descrição dos módulos Gradle abaixo documenta a **linha 0.1.x (Kotlin)**, ainda presente como referência e Studio Windows. Decisão: [adr/0001-migrar-para-react-native.md](adr/0001-migrar-para-react-native.md).
+
+Na 0.1, a app Android corre no tablet; o **Studio Windows** (`:studio`) prepara narrações com microfone USB.
+
+## Alvo da v0.2 (React Native)
+
+```
+mobile/ (React Native 0.88, TypeScript)
+  ecrãs professor / aluno
+        ↓
+  LsbFiles + LsbAudio + LsbSpeech (Android)
+        ↓
+  src/core alinhador (portado de :shared)
+        ↓
+  filesDir/lsb/contents/<id>/content.json + audio.wav
+  pacote .lsb (formato inalterado)
+```
+
+`LsbSpeech.isAvailable()` devolve `false` até o whisper.cpp ser ligado. A importação `.lsb` e a leitura sincronizada já usam o alinhador e o relógio do `MediaPlayer`.
+
+A UI deixa de ser Jetpack Compose. O contrato de dados e o motor local **não** passam a ser serviços na Internet.
+
+## Módulos (linha 0.1, Kotlin)
 
 | Módulo | Responsabilidade |
 | --- | --- |
 | `app` | Arranque, navegação, tema e ecrãs institucionais. |
-| `core` | Modelos de domínio, tokenização e formato exportável JSON. |
-| `alignment` | Alinhamento entre texto original e palavras reconhecidas. |
-| `audio` | Gravação PCM, importação, conversão WAV 16 kHz e reprodução Media3. |
+| `shared` | Modelos, alinhamento, contratos e editor de intervalos (Kotlin/JVM). |
+| `core` | Fachada `api(:shared)` para os módulos Android. |
+| `alignment` | Fachada `api(:shared)` e testes de alinhamento. |
+| `audio` | Gravação PCM, importação, forma de onda, conversão WAV 16 kHz e reprodução Media3. |
 | `speech` | Interface do motor de fala e implementação JNI do whisper.cpp. |
 | `data` | Room, ficheiros privados e pacote `content.json`. |
 | `feature-teacher` | Criação, sincronização e correção manual. |
 | `feature-reader` | Experiência do aluno e destaque sincronizado. |
+| `studio` | App Windows (Compose Desktop): captura WAV, editor de sincronização, whisper-cli nativo x64. |
+| `lab-cli` | CLI interno do alinhador para o laboratório Python. **Não** entra no APK. |
+| `test-lab` | Python interno: sintéticos (Fase 7) e vozes reais / dois motores (Fase 8). **Não** entra no APK. |
 
 Esta divisão segue o pedido original e evita um único módulo monolítico, sem introduzir injeção de dependências pesada. O `AppContainer` em `LerSemBarreirasApp` cria os serviços.
 
@@ -56,7 +82,7 @@ A base Room guarda o mesmo estado para consultas rápidas. A reabertura de um co
 - `WAKE_LOCK` — manter a CPU acordada durante a sincronização longa.
 - **Sem** `INTERNET`.
 
-A importação usa o seletor de documentos do Android (`ACTION_OPEN_DOCUMENT`).
+A importação de áudio usa o seletor de documentos do Android (`ACTION_OPEN_DOCUMENT`). A transferência de exercícios entre o Studio e o tablet usa o pacote [`.lsb`](lsb-format.md) (ZIP versionado, checksums SHA-256), sem servidor.
 
 ## Interface
 

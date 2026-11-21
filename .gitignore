@@ -2,6 +2,9 @@
 .gradle/
 build/
 **/build/
+**/bin/
+**/__pycache__/
+*.pyc
 local.properties
 *.iml
 .idea/
@@ -15,8 +18,12 @@ captures/
 
 # Native / third-party fetch (obtained at build time, not versioned)
 speech/src/main/cpp/third_party/whisper.cpp/
+mobile/android/whisper/src/main/cpp/third_party/whisper.cpp/
 **/src/main/assets/models/*.bin
 **/src/main/assets/models/*.gguf
+studio/packaging/windows/*.exe
+studio/packaging/windows/*.dll
+studio/packaging/windows/*.bin
 
 # NDK
 .externalNativeBuild/
@@ -52,3 +59,10 @@ google-services.json
 
 # Kotlin
 .kotlin/
+
+# Laboratório sintético (gerado)
+test-lab/work/
+
+# React Native (v0.2)
+mobile/node_modules/
+mobile/.bundle/

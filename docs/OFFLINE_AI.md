@@ -42,7 +42,9 @@ As marcas temporais ao nível de *tokens* do whisper.cpp são **experimentais**.
 - tempos nativos em unidades de 10 ms, convertidos para milissegundos
 - se um *token* não tiver intervalo válido, usa-se o intervalo do segmento e a palavra é marcada para revisão
 
-Não são inventados timestamps com aparência de precisão de palavra quando o motor só fornece um segmento. Palavras sem correspondência fiável no alinhamento ficam com `startMs`/`endMs` nulos e `needsReview = true`.
+Não são inventados timestamps com aparência de precisão de palavra quando o motor só fornece um segmento. Palavras sem correspondência fiável no alinhamento ficam com `startMs`/`endMs` nulos e `needsReview = true`, excepto lacunas **curtas** entre duas âncoras ASR: essas recebem um intervalo interpolado (`TimestampOrigin.ALIGNED`, estado REVIEW) para o professor validar. Pausas longas e pontas da frase não são preenchidas.
+
+O Studio Windows e o laboratório usam `whisper-cli -ml 60 -sow`, o mesmo critério de comprimento que o JNI Android (`max_len = 60`, `split_on_word = true`). A versão anterior do Studio usava `-ml 1`, o que gerava segmentos de um carácter e sobreposições.
 
 ## Alinhamento
 
@@ -51,9 +53,11 @@ Não são inventados timestamps com aparência de precisão de palavra quando o 
 - pontuação e maiúsculas
 - acentuação (NFD + remoção de diacríticos)
 - palavras repetidas
-- omissões do narrador
-- hesitações extra reconhecidas
+- omissões do narrador (lacunas curtas interpoladas para revisão; longas ficam sem tempo)
+- hesitações extra reconhecidas (uh, hum, … ignoradas se não estiverem no texto)
+- dígitos ASR mapeados a um/dois/três
 - pequenos erros de ASR (distância de Levenshtein)
+- sobreposições residuais recortadas pelo `TimeValidator` (excepto palavras MANUAL/VERIFIED)
 
 ## Cancelamento e progresso
 

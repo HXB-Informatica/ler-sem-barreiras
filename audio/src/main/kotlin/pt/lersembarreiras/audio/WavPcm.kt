@@ -2,9 +2,20 @@ package pt.lersembarreiras.audio
 
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.roundToInt
+
+data class WavInfo(
+    val sampleRate: Int,
+    val channels: Int,
+    val bits: Int,
+    val dataOffset: Long,
+    val dataSize: Int,
+) {
+    val frameCount: Int get() = if (channels <= 0 || bits < 8) 0 else dataSize / (channels * (bits / 8))
+}
 
 object WavPcm {
     const val WHISPER_SAMPLE_RATE = 16_000
@@ -30,6 +41,52 @@ object WavPcm {
         buffer.putInt(dataSize)
         pcm16Mono.forEach { buffer.putShort(it) }
         file.writeBytes(buffer.array())
+    }
+
+    fun inspectWav(file: File): WavInfo {
+        RandomAccessFile(file, "r").use { raf ->
+            require(raf.length() >= 44) { "Ficheiro WAV demasiado pequeno." }
+            val riff = ByteArray(4).also { raf.readFully(it) }
+            require(String(riff, Charsets.US_ASCII) == "RIFF") { "Formato WAV inválido." }
+            raf.skipBytes(4)
+            val wave = ByteArray(4).also { raf.readFully(it) }
+            require(String(wave, Charsets.US_ASCII) == "WAVE") { "Formato WAV inválido." }
+            var sampleRate = WHISPER_SAMPLE_RATE
+            var bits = BITS_PER_SAMPLE
+            var channels = CHANNELS
+            while (raf.filePointer + 8 <= raf.length()) {
+                val id = ByteArray(4).also { raf.readFully(it) }
+                val size = readLittleEndianInt(raf)
+                val chunk = String(id, Charsets.US_ASCII)
+                when (chunk) {
+                    "fmt " -> {
+                        val fmt = ByteArray(size)
+                        raf.readFully(fmt)
+                        val buffer = ByteBuffer.wrap(fmt).order(ByteOrder.LITTLE_ENDIAN)
+                        buffer.short
+                        channels = buffer.short.toInt()
+                        sampleRate = buffer.int
+                        buffer.int
+                        buffer.short
+                        bits = buffer.short.toInt()
+                        if (size % 2 == 1) raf.skipBytes(1)
+                    }
+                    "data" -> {
+                        return WavInfo(sampleRate, channels, bits, raf.filePointer, size)
+                    }
+                    else -> {
+                        raf.skipBytes(size + size % 2)
+                    }
+                }
+            }
+            error("Chunk de dados PCM não encontrado.")
+        }
+    }
+
+    private fun readLittleEndianInt(raf: RandomAccessFile): Int {
+        val bytes = ByteArray(4)
+        raf.readFully(bytes)
+        return ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).int
     }
 
     fun readPcm16Mono(file: File): Pair<Int, ShortArray> {

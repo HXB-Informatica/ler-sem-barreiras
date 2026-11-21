@@ -40,6 +40,14 @@ class WordTokenizerTest {
     }
 
     @Test
+    fun mapsDigitsToPortugueseNumberWords() {
+        assertEquals("um", WordTokenizer.normalizeForMatch("1"))
+        assertEquals("dois", WordTokenizer.normalizeForMatch("2"))
+        assertEquals("tres", WordTokenizer.normalizeForMatch("3"))
+        assertEquals("um", WordTokenizer.normalizeForMatch("um"))
+    }
+
+    @Test
     fun levenshteinDetectsSmallAsrErrors() {
         assertEquals(0, WordTokenizer.levenshtein("casa", "casa"))
         assertEquals(1, WordTokenizer.levenshtein("casa", "casas"))

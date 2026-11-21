@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pt.lersembarreiras.alignment.TimeValidator
 import pt.lersembarreiras.audio.ContentPlayer
-import pt.lersembarreiras.audio.PlaybackSnapshot
+import pt.lersembarreiras.core.model.PlaybackSnapshot
 import pt.lersembarreiras.core.model.PresentationMode
 import pt.lersembarreiras.core.model.ReaderSettings
 import pt.lersembarreiras.core.model.ReadingContent

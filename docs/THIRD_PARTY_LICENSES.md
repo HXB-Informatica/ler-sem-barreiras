@@ -24,6 +24,25 @@ A redistribuição no APK de teste é feita ao abrigo dessa licença. Os modelos
 
 Distribuídos pela Google e JetBrains sob as licenças Apache 2.0 aplicáveis a cada artefacto Maven. Consulte os POM das dependências para a lista exaustiva. Nenhuma destas bibliotecas envia dados para o exterior na configuração deste projeto.
 
+## Mozilla Common Voice (laboratório, não redistribuído)
+
+- Origem: [commonvoice.mozilla.org](https://commonvoice.mozilla.org/) / corpus `pt`
+- Licença das gravações e frases: **CC-0**
+- Este repositório **não** inclui os áudios. O laboratório descarrega ou lê um corpus local para `test-lab/work/` (gitignore)
+- Não se tentam identificar locutores
+
+## Montreal Forced Aligner (laboratório, opcional)
+
+- [Montreal Forced Aligner](https://montreal-forced-aligner.readthedocs.io/): MIT
+- Modelos acústicos de português da MFA: verificar a licença do modelo no momento da instalação
+- **Não** entra na aplicação dos alunos. Só é invocado se `mfa` existir no `PATH`
+
+## Piper TTS (laboratório, opcional)
+
+- Motor [Piper](https://github.com/rhasspy/piper): MIT
+- Voz europeia `pt_PT-tugão-medium` em [rhasspy/piper-voices](https://huggingface.co/rhasspy/piper-voices): MIT no repositório de vozes; gravações da voz CC0; o modelo foi afinado a partir de Hi-Fi TTS (CC BY 4.0), o que implica atribuição se essa voz for redistribuída
+- **Não** é incluída na aplicação dos alunos. O laboratório usa PCM sintético por omissão.
+
 ## Contributor Covenant
 
 O código de conduta adapta o Contributor Covenant 2.1, disponível para utilização nos termos do próprio projeto Contributor Covenant.

@@ -1,0 +1,232 @@
+{
+  "seed": 7,
+  "count": 500,
+  "disclaimer": "Os tempos de referência são limites de segmentos PCM concatenados (palavra + pausa), não fronteiras fonéticas de fala natural. Validam o algoritmo em condições controladas e não substituem testes com voz humana.",
+  "reference_kind": "synthetic_concat_pcm",
+  "memory": "não mensurável neste ambiente",
+  "aligned_pct": 98.05996472663139,
+  "unrecognized_words": 44,
+  "invalid_intervals": 0,
+  "mean_error_ms": 1.193794964028777,
+  "median_error_ms": 0.0,
+  "p95_error_ms": 0.0,
+  "mean_processing_ms": 0.2140292,
+  "by_category": {
+    "asr_extra": {
+      "cases": 38,
+      "words": 174,
+      "aligned_pct": 100.0,
+      "unrecognized_words": 0,
+      "invalid_intervals": 0,
+      "mean_error_ms": 0.0,
+      "median_error_ms": 0.0,
+      "p95_error_ms": 0.0,
+      "mean_processing_ms": 0.11138157894736841
+    },
+    "asr_omit": {
+      "cases": 38,
+      "words": 166,
+      "aligned_pct": 85.5421686746988,
+      "unrecognized_words": 24,
+      "invalid_intervals": 0,
+      "mean_error_ms": 5.982456140350878,
+      "median_error_ms": 0.0,
+      "p95_error_ms": 23.324999999999992,
+      "mean_processing_ms": 0.17937368421052632
+    },
+    "asr_substitute": {
+      "cases": 38,
+      "words": 166,
+      "aligned_pct": 87.95180722891567,
+      "unrecognized_words": 20,
+      "invalid_intervals": 0,
+      "mean_error_ms": 9.06359649122807,
+      "median_error_ms": 0.0,
+      "p95_error_ms": 28.75,
+      "mean_processing_ms": 0.1139921052631579
+    },
+    "canonical": {
+      "cases": 39,
+      "words": 156,
+      "aligned_pct": 100.0,
+      "unrecognized_words": 0,
+      "invalid_intervals": 0,
+      "mean_error_ms": 0.0,
+      "median_error_ms": 0.0,
+      "p95_error_ms": 0.0,
+      "mean_processing_ms": 1.3211333333333333
+    },
+    "noise": {
+      "cases": 38,
+      "words": 164,
+      "aligned_pct": 100.0,
+      "unrecognized_words": 0,
+      "invalid_intervals": 0,
+      "mean_error_ms": 0.0,
+      "median_error_ms": 0.0,
+      "p95_error_ms": 0.0,
+      "mean_processing_ms": 0.11601315789473685
+    },
+    "numbers": {
+      "cases": 39,
+      "words": 216,
+      "aligned_pct": 100.0,
+      "unrecognized_words": 0,
+      "invalid_intervals": 0,
+      "mean_error_ms": 0.0,
+      "median_error_ms": 0.0,
+      "p95_error_ms": 0.0,
+      "mean_processing_ms": 0.14507692307692308
+    },
+    "paragraph": {
+      "cases": 38,
+      "words": 333,
+      "aligned_pct": 100.0,
+      "unrecognized_words": 0,
+      "invalid_intervals": 0,
+      "mean_error_ms": 0.0,
+      "median_error_ms": 0.0,
+      "p95_error_ms": 0.0,
+      "mean_processing_ms": 0.20438421052631578
+    },
+    "pause_long": {
+      "cases": 39,
+      "words": 164,
+      "aligned_pct": 100.0,
+      "unrecognized_words": 0,
+      "invalid_intervals": 0,
+      "mean_error_ms": 0.0,
+      "median_error_ms": 0.0,
+      "p95_error_ms": 0.0,
+      "mean_processing_ms": 0.0944025641025641
+    },
+    "punctuation": {
+      "cases": 39,
+      "words": 88,
+      "aligned_pct": 100.0,
+      "unrecognized_words": 0,
+      "invalid_intervals": 0,
+      "mean_error_ms": 0.0,
+      "median_error_ms": 0.0,
+      "p95_error_ms": 0.0,
+      "mean_processing_ms": 0.08404358974358975
+    },
+    "repeats": {
+      "cases": 39,
+      "words": 117,
+      "aligned_pct": 100.0,
+      "unrecognized_words": 0,
+      "invalid_intervals": 0,
+      "mean_error_ms": 0.0,
+      "median_error_ms": 0.0,
+      "p95_error_ms": 0.0,
+      "mean_processing_ms": 0.06154102564102564
+    },
+    "short_words": {
+      "cases": 39,
+      "words": 177,
+      "aligned_pct": 100.0,
+      "unrecognized_words": 0,
+      "invalid_intervals": 0,
+      "mean_error_ms": 0.0,
+      "median_error_ms": 0.0,
+      "p95_error_ms": 0.0,
+      "mean_processing_ms": 0.10236410256410257
+    },
+    "speed_fast": {
+      "cases": 38,
+      "words": 166,
+      "aligned_pct": 100.0,
+      "unrecognized_words": 0,
+      "invalid_intervals": 0,
+      "mean_error_ms": 0.0,
+      "median_error_ms": 0.0,
+      "p95_error_ms": 0.0,
+      "mean_processing_ms": 0.10943421052631579
+    },
+    "speed_slow": {
+      "cases": 38,
+      "words": 181,
+      "aligned_pct": 100.0,
+      "unrecognized_words": 0,
+      "invalid_intervals": 0,
+      "mean_error_ms": 0.0,
+      "median_error_ms": 0.0,
+      "p95_error_ms": 0.0,
+      "mean_processing_ms": 0.12543947368421052
+    }
+  },
+  "worst": [
+    {
+      "id": "s0007-0009-asr_omit",
+      "category": "asr_omit",
+      "missing": 1,
+      "mean_abs_error_ms": 0.0,
+      "text": "Seis sete oito nove dez"
+    },
+    {
+      "id": "s0007-0010-asr_substitute",
+      "category": "asr_substitute",
+      "missing": 1,
+      "mean_abs_error_ms": 0.0,
+      "text": "O sol brilha no céu"
+    },
+    {
+      "id": "s0007-0023-asr_substitute",
+      "category": "asr_substitute",
+      "missing": 1,
+      "mean_abs_error_ms": 0.0,
+      "text": "Há três livros na mesa"
+    },
+    {
+      "id": "s0007-0035-asr_omit",
+      "category": "asr_omit",
+      "missing": 1,
+      "mean_abs_error_ms": 0.0,
+      "text": "A frase é curta"
+    },
+    {
+      "id": "s0007-0048-asr_omit",
+      "category": "asr_omit",
+      "missing": 1,
+      "mean_abs_error_ms": 0.0,
+      "text": "Os miúdos brincam no recreio"
+    },
+    {
+      "id": "s0007-0061-asr_omit",
+      "category": "asr_omit",
+      "missing": 1,
+      "mean_abs_error_ms": 0.0,
+      "text": "A menina lê o livro"
+    },
+    {
+      "id": "s0007-0074-asr_omit",
+      "category": "asr_omit",
+      "missing": 1,
+      "mean_abs_error_ms": 0.0,
+      "text": "O gato corre"
+    },
+    {
+      "id": "s0007-0087-asr_omit",
+      "category": "asr_omit",
+      "missing": 1,
+      "mean_abs_error_ms": 0.0,
+      "text": "o gato o gato"
+    },
+    {
+      "id": "s0007-0127-asr_substitute",
+      "category": "asr_substitute",
+      "missing": 1,
+      "mean_abs_error_ms": 0.0,
+      "text": "Sim, eu sei."
+    },
+    {
+      "id": "s0007-0139-asr_omit",
+      "category": "asr_omit",
+      "missing": 1,
+      "mean_abs_error_ms": 0.0,
+      "text": "a bola a bola a bola"
+    }
+  ],
+  "wall_align_s": 0.4700278000018443
+}

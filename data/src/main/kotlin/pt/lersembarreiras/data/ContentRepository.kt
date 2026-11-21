@@ -11,16 +11,21 @@ import pt.lersembarreiras.core.model.ReadingContent
 import pt.lersembarreiras.core.model.SyncStatus
 import pt.lersembarreiras.core.model.WordTiming
 import pt.lersembarreiras.core.packageformat.ContentPackageMapper
+import pt.lersembarreiras.lsb.LsbArchive
+import pt.lersembarreiras.lsb.LsbException
+import pt.lersembarreiras.lsb.LsbImportResult
+import pt.lersembarreiras.shared.AlignmentRepository
+import java.io.InputStream
 
 class ContentRepository(
     private val context: Context,
     private val dao: ContentDao,
-) {
-    fun observeAll(): Flow<List<ReadingContent>> = dao.observeAll().map { list ->
+) : AlignmentRepository {
+    override fun observeAll(): Flow<List<ReadingContent>> = dao.observeAll().map { list ->
         list.map { it.toModel() }
     }
 
-    suspend fun get(id: String): ReadingContent? = dao.getById(id)?.toModel()
+    override suspend fun get(id: String): ReadingContent? = dao.getById(id)?.toModel()
 
     suspend fun createDraft(title: String = "", text: String = ""): ReadingContent {
         val now = System.currentTimeMillis()
@@ -36,7 +41,7 @@ class ContentRepository(
         return content
     }
 
-    suspend fun save(content: ReadingContent): ReadingContent {
+    override suspend fun save(content: ReadingContent): ReadingContent {
         val updated = content.copy(updatedAtEpochMs = System.currentTimeMillis())
         dao.upsert(ContentEntity.from(updated))
         writeExportablePackage(updated)
@@ -63,16 +68,58 @@ class ContentRepository(
 
     fun contentDirectory(id: String): File = directoryFor(id).also { it.mkdirs() }
 
-    suspend fun updateWords(
+    override suspend fun updateWords(
         content: ReadingContent,
         words: List<WordTiming>,
         status: SyncStatus,
-        durationMs: Long = content.durationMs,
+        durationMs: Long,
     ): ReadingContent = save(
         content.copy(words = words, syncStatus = status, durationMs = durationMs),
     )
 
-    suspend fun delete(id: String) {
+    suspend fun importLsb(input: InputStream): LsbImportResult = withContext(Dispatchers.IO) {
+        val bundle = LsbArchive.import(input)
+        val existing = dao.getById(bundle.manifest.contentId)?.toModel()
+        if (existing != null && LsbArchive.identical(existing, bundle)) {
+            return@withContext LsbImportResult(existing, duplicate = true)
+        }
+        val id = if (existing == null) bundle.manifest.contentId else UUID.randomUUID().toString()
+        val remapped = existing != null
+        val staging = File(context.filesDir, "contents/.import-${UUID.randomUUID()}")
+        val destination = directoryFor(id)
+        val previous = destination.takeIf { it.exists() }?.let { dir ->
+            File(context.filesDir, "contents/.backup-$id-${System.currentTimeMillis()}").also { backup ->
+                dir.copyRecursively(backup, overwrite = true)
+            }
+        }
+        try {
+            if (staging.exists()) staging.deleteRecursively()
+            staging.mkdirs()
+            File(staging, AUDIO_FILE).writeBytes(bundle.audio)
+            val content = LsbArchive.toContent(bundle, id, relativeAudioPath(id))
+            File(staging, PACKAGE_FILE).writeText(ContentPackageMapper.encode(content))
+            if (destination.exists()) destination.deleteRecursively()
+            check(staging.renameTo(destination) || staging.copyRecursively(destination, overwrite = true)) {
+                "Não foi possível gravar o exercício importado."
+            }
+            if (staging.exists() && staging.canonicalFile != destination.canonicalFile) {
+                staging.deleteRecursively()
+            }
+            dao.upsert(ContentEntity.from(content))
+            previous?.deleteRecursively()
+            LsbImportResult(content, idRemapped = remapped)
+        } catch (error: Exception) {
+            staging.deleteRecursively()
+            if (previous != null) {
+                destination.deleteRecursively()
+                previous.renameTo(destination)
+            }
+            if (error is LsbException) throw error
+            throw LsbException(error.message ?: "A importação falhou e os conteúdos existentes foram preservados.", error)
+        }
+    }
+
+    override suspend fun delete(id: String) {
         dao.delete(id)
         withContext(Dispatchers.IO) {
             directoryFor(id).deleteRecursively()

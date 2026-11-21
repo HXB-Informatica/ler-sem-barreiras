@@ -7,6 +7,6 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(":core"))
+    api(project(":shared"))
     testImplementation(libs.junit)
 }

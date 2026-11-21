@@ -2,7 +2,7 @@
 
 Aplicação Android educativa, gratuita e **integralmente offline**, para sincronizar um texto com a respetiva narração áudio. Destina-se a apoiar crianças com dificuldades de leitura, comunicação e aprendizagem.
 
-**Versão:** 0.1.1
+**Versão:** 0.2.0 (reescrita React Native; última app Kotlin instalável: 0.1.1-beta)
 
 ## Responsabilidade do projeto
 
@@ -20,6 +20,15 @@ O projeto pertence à iniciativa da escola. A HXB é identificada como parceiro 
 - Sem recolha ou transmissão de dados de alunos.
 - Sem dependência de infraestruturas da HXB.
 - Sem componentes proprietários obrigatórios para executar a aplicação.
+
+## Linha 0.2 — React Native
+
+A **v0.2.0** inicia a conversão da aplicação móvel de Kotlin/Android nativo para **React Native**. A linha 0.1.x **não está a funcionar correctamente** no tablet escolar (sincronização e ciclo completo por validar; cadeia JNI/áudio frágil).
+
+- Decisão: [docs/adr/0001-migrar-para-react-native.md](docs/adr/0001-migrar-para-react-native.md)
+- Notas desta versão: [docs/releases/v0.2.0.md](docs/releases/v0.2.0.md)
+
+O código activo está em [`mobile/`](mobile/README.md). Compilação e testes: `cd mobile && npm test`. A sincronização automática no tablet espera pelo whisper.cpp nativo; até lá importe um `.lsb` do Studio. O código Kotlin 0.1.x permanece como referência e como Studio Windows.
 
 ## O que a versão 0.1 faz
 
@@ -57,9 +66,11 @@ O objetivo do motor não é substituir o texto do professor: é estimar *quando*
 
 A forma prevista de obter a aplicação é a página de [GitHub Releases](https://github.com/HXB-Informatica/ler-sem-barreiras/releases). Qualquer pessoa pode descarregar o APK, **sem conta GitHub** e sem compilar o código.
 
-**Versão atual de testes:** [Ler sem Barreiras v0.1.1 Beta](https://github.com/HXB-Informatica/ler-sem-barreiras/releases/tag/v0.1.1-beta)
+**Versão de produto actual:** 0.2.0 (documentação da reescrita React Native; ainda sem APK desta linha).
 
-Esta versão é **experimental**. Destina-se a testes técnicos, não a utilização pedagógica em produção. O APK está assinado com a chave de depuração do Android; uma assinatura de produção será configurada mais tarde, através de GitHub Secrets, sem nunca versionar chaves privadas.
+**Última app Kotlin de testes:** [Ler sem Barreiras v0.1.1 Beta](https://github.com/HXB-Informatica/ler-sem-barreiras/releases/tag/v0.1.1-beta)
+
+A 0.1.1-beta é **experimental** e **não** é a base de desenvolvimento da 0.2. Destinava-se a testes técnicos, não a utilização pedagógica em produção. O APK está assinado com a chave de depuração do Android; uma assinatura de produção será configurada mais tarde, através de GitHub Secrets, sem nunca versionar chaves privadas.
 
 ### Instalação num tablet Android
 
@@ -81,6 +92,16 @@ Compilação local, se preferir gerar o APK no seu computador:
 
 O APK fica em `app/build/outputs/apk/debug/`.
 
+Studio Windows (professores, microfone USB):
+
+```powershell
+.\gradlew.bat :studio:run
+.\gradlew.bat :studio:createDistributable
+.\gradlew.bat :studio:packageMsi
+```
+
+Detalhes em [docs/studio-windows.md](docs/studio-windows.md).
+
 No Windows (PowerShell):
 
 ```powershell
@@ -91,7 +112,17 @@ A primeira compilação descarrega o código do whisper.cpp e o modelo `ggml-tin
 
 ## Documentação
 
+- [Decisão: migrar para React Native (ADR 0001)](docs/adr/0001-migrar-para-react-native.md)
+- [Notas v0.2.0](docs/releases/v0.2.0.md)
 - [Arquitetura](docs/ARCHITECTURE.md)
+- [Editor visual do professor](docs/teacher-sync-editor.md)
+- [Studio Windows](docs/studio-windows.md)
+- [Formato .lsb](docs/lsb-format.md)
+- [Laboratório de testes sintéticos](test-lab/README.md)
+- [Vozes reais (laboratório)](docs/test-lab/real-voices.md)
+- [Instalação e utilização](docs/INSTALL.md)
+- [Diagnóstico Fase 9](docs/fase9-diagnostico.md)
+- [Limitações](docs/LIMITATIONS.md)
 - [Desenvolvimento](docs/DEVELOPMENT.md)
 - [Motor offline](docs/OFFLINE_AI.md)
 - [Testes](docs/TESTING.md)

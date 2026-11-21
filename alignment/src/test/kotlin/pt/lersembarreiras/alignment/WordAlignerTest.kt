@@ -44,7 +44,7 @@ class WordAlignerTest {
     }
 
     @Test
-    fun marksOmittedWordsWithoutInventingTimestamps() {
+    fun interpolatesShortInternalGapsAsReviewNotAsr() {
         val result = aligner.align(
             sourceText = "o gato preto corre",
             recognized = listOf(
@@ -55,11 +55,29 @@ class WordAlignerTest {
             audioDurationMs = 1000,
         )
         val omitted = result.words.first { it.text == "preto" }
+        assertEquals(300L, omitted.startMs)
+        assertEquals(700L, omitted.endMs)
+        assertTrue(omitted.needsReview)
+        assertEquals(pt.lersembarreiras.core.model.TimestampOrigin.ALIGNED, omitted.resolvedOrigin())
+        assertEquals(4, result.alignedCount)
+        assertEquals(SyncStatus.COMPLETED_WITH_GAPS, result.status)
+    }
+
+    @Test
+    fun doesNotInventTimesAcrossLongPauses() {
+        val result = aligner.align(
+            sourceText = "o gato preto corre",
+            recognized = listOf(
+                rec("o", 0, 80),
+                rec("gato", 90, 300),
+                rec("corre", 2200, 2500),
+            ),
+            audioDurationMs = 2600,
+        )
+        val omitted = result.words.first { it.text == "preto" }
         assertNull(omitted.startMs)
         assertNull(omitted.endMs)
         assertTrue(omitted.needsReview)
-        assertEquals(3, result.alignedCount)
-        assertEquals(SyncStatus.COMPLETED_WITH_GAPS, result.status)
     }
 
     @Test
@@ -75,7 +93,7 @@ class WordAlignerTest {
         )
         assertEquals(150L, result.words[0].startMs)
         assertEquals(340L, result.words[1].startMs)
-        assertTrue(result.unusedRecognizedCount >= 1)
+        assertEquals(2, result.alignedCount)
     }
 
     @Test
@@ -117,6 +135,39 @@ class WordAlignerTest {
         assertTrue(aligner.similarity("acao", "acao") > 0)
         assertTrue(aligner.similarity("casa", "casas") > 0)
         assertTrue(aligner.similarity("mesa", "gato") < 0)
+    }
+
+    @Test
+    fun matchesSpokenDigitsToNumberWords() {
+        val result = aligner.align(
+            sourceText = "um dois três",
+            recognized = listOf(
+                rec("1", 0, 120),
+                rec("2", 140, 280),
+                rec("3", 300, 440),
+            ),
+            audioDurationMs = 500,
+        )
+        assertEquals(3, result.alignedCount)
+        assertEquals(0L, result.words[0].startMs)
+        assertEquals(140L, result.words[1].startMs)
+    }
+
+    @Test
+    fun mergesSplitTokensAndIgnoresFillers() {
+        val result = aligner.align(
+            sourceText = "vamos ler",
+            recognized = listOf(
+                rec("uh", 0, 80, 0.2f),
+                rec("va", 100, 220, 0.8f),
+                rec("mos", 220, 360, 0.8f),
+                rec("ler", 400, 560, 0.9f),
+            ),
+            audioDurationMs = 600,
+        )
+        assertEquals(100L, result.words[0].startMs)
+        assertEquals(400L, result.words[1].startMs)
+        assertEquals(2, result.alignedCount)
     }
 
     private fun rec(

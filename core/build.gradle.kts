@@ -8,7 +8,6 @@ kotlin {
 }
 
 dependencies {
-    implementation(libs.kotlinx.coroutines.core)
-    implementation(libs.kotlinx.serialization.json)
+    api(project(":shared"))
     testImplementation(libs.junit)
 }

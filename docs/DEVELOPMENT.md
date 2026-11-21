@@ -1,6 +1,21 @@
 # Desenvolvimento
 
-## Requisitos de compilação
+## Versão 0.2.0 — React Native
+
+A partir de **v0.2.0** o desenvolvimento activo da app móvel é em React Native, pasta [`mobile/`](../mobile). Ver [adr/0001-migrar-para-react-native.md](adr/0001-migrar-para-react-native.md) e [releases/v0.2.0.md](releases/v0.2.0.md).
+
+```powershell
+cd mobile
+npm install
+npm test
+npx react-native run-android
+```
+
+A release Android **não** declara `INTERNET`. Só a variante `debug` a inclui, para o Metro. Não publique um APK Kotlin 0.1.x com `versionName` 0.2.0.
+
+As instruções Gradle da linha Kotlin abaixo aplicam-se ao Studio Windows e ao código de referência 0.1.x.
+
+## Requisitos de compilação (Kotlin 0.1.x)
 
 - JDK 17
 - Android SDK (compileSdk 35, build-tools 35)
@@ -15,6 +30,13 @@ A aplicação gerada não precisa de Internet.
 ```bash
 ./gradlew :app:assembleDebug
 ./gradlew test
+./gradlew :studio:run
+./gradlew :studio:createDistributable
+./gradlew :studio:packageMsi
+./gradlew :studio:fetchWhisperWindows
+./gradlew :lab-cli:installDist
+python test-lab/run.py --seed 7 --count 500 --twice
+python test-lab/run_real.py --seed 8 --count 200 --twice
 ```
 
 Tarefas úteis do módulo `speech`:
@@ -44,6 +66,7 @@ Catálogo de versões em `gradle/libs.versions.toml`. Versões escolhidas por es
 - Android Gradle Plugin 8.7.3
 - Kotlin 2.0.21
 - Compose BOM 2024.12.01
+- Compose Multiplatform 1.7.1 (módulo `:studio`; não 1.7.3, para permanecer em Kotlin 2.0.21)
 - Media3 1.5.1
 - Room 2.6.1
 - NDK 27.2.12479018
@@ -76,6 +99,10 @@ A assinatura de produção ficará, no futuro, a cargo do GitHub Actions, com Gi
 Não implementar uma chave fictícia. Enquanto estes segredos não existirem, o CI continua a produzir APK de *debug*.
 
 ## Publicar uma nova versão
+
+Para a linha 0.2, as notas da versão actual estão em `docs/releases/v0.2.0.md`. Uma Release GitHub com APK React Native só deve ser criada quando houver build instalável. Não reutilize a tag `v0.1.1-beta`.
+
+## Publicar uma versão da linha Kotlin 0.1.x (histórico)
 
 As Releases são criadas automaticamente quando uma tag `v*` é enviada para o GitHub.
 

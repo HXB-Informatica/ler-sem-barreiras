@@ -1,8 +1,11 @@
 package pt.lersembarreiras.app.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -26,6 +29,12 @@ fun AppNav() {
     val navController = rememberNavController()
     val app = LocalContext.current.applicationContext as LerSemBarreirasApp
     val container = app.container
+    val pendingShared by container.pendingLsbUri.collectAsStateWithLifecycle()
+    LaunchedEffect(pendingShared) {
+        if (pendingShared != null && navController.currentDestination?.route != "teacher") {
+            navController.navigate("teacher")
+        }
+    }
 
     NavHost(navController = navController, startDestination = "home") {
         composable("home") {
@@ -40,11 +49,14 @@ fun AppNav() {
         }
         composable("teacher") {
             val vm: TeacherListViewModel = viewModel(factory = TeacherListViewModel.factory(container.repository))
+            val pending by container.pendingLsbUri.collectAsStateWithLifecycle()
             TeacherListScreen(
                 viewModel = vm,
                 onBack = { navController.popBackStack() },
                 onCreate = { navController.navigate("teacher/edit/new") },
                 onOpen = { id -> navController.navigate("teacher/edit/$id") },
+                pendingImportUri = pending,
+                onPendingImportConsumed = { container.pendingLsbUri.value = null },
             )
         }
         composable("teacher/edit/new") {

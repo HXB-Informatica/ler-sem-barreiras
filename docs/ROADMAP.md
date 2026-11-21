@@ -1,24 +1,36 @@
 # Roteiro
 
-## v0.1 (esta versão)
+## v0.2.0 — reescrita React Native (versão actual)
+
+Decisão aceite em [adr/0001-migrar-para-react-native.md](adr/0001-migrar-para-react-native.md). Notas: [releases/v0.2.0.md](releases/v0.2.0.md).
+
+A app móvel Kotlin 0.1.x não está a funcionar correctamente; o desenvolvimento activo passa para React Native.
+
+- Scaffold em `mobile/` (React Native 0.88): ecrãs, persistência, `.lsb`, alinhador, áudio PCM
+- Ligar whisper.cpp ao `LsbSpeechModule` (ainda em falta)
+- Sem `INTERNET` na release, sem nuvem, mesma GPL-3.0-only
+- Validação obrigatória no HOTWAV TAB R9 Plus em modo avião antes de pre-release instalável
+
+## v0.1.x — linha Kotlin (congelada)
+
+Última publicação instalável: **v0.1.1-beta** (`versionName` 0.1.1, `versionCode` 2).
 
 - Fundação do repositório público e da licença GPL-3.0-only
-- Aplicação Android compilável, offline
-- Modo Professor e Modo Aluno
-- whisper.cpp + alinhamento + correção manual
-- CI com APK de teste e publicação automática em GitHub Releases
+- App Android Compose, Studio Windows, whisper.cpp JNI, alinhador, laboratórios 7–9
+- Correção da gravação na 0.1.1
+- **Não** continua como base da app móvel. O código serve de referência de formatos e do Studio.
 
-## v0.2 — qualidade no equipamento de referência
+## v0.2.x — qualidade no equipamento de referência (depois da paridade RN)
 
 - *Benchmarks* reais no HOTWAV TAB R9 Plus
-- Comparação empírica `tiny` vs `base` vs variantes quantizadas em português europeu
+- Comparação empírica de modelos Whisper no dispositivo
 - Serviço em primeiro plano para sincronizações longas
-- Exportação/importação de pacotes entre tablets da escola, sem nuvem (partilha por ficheiro)
+- Exportação/importação de pacotes entre tablets da escola, sem nuvem
 
 ## v0.3 — acessibilidade e conteúdos
 
 - Mais opções de letra, espaçamento e temas
-- Apoio TalkBack revisto com utilizadores
+- Apoio de leitor de ecrã revisto com utilizadores
 - Guias para professores
 - Biblioteca de exemplos sintéticos autorizados
 
@@ -29,3 +41,4 @@
 - Modelos pagos ou APIs remotas de voz
 - Publicação numa loja com chave de produção enquanto a gestão de chaves não estiver definida
 - Recolha de dados de aprendizagem dos alunos
+- Reescrita do Studio Windows na v0.2.0

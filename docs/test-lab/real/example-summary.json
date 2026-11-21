@@ -1,0 +1,639 @@
+{
+  "count": 200,
+  "words": 1072,
+  "mapped_pct_a": 90.29850746268657,
+  "mapped_pct_b": 100.0,
+  "missing_words_a": 104,
+  "invalid_a": 551,
+  "overlaps_a": 0,
+  "dev_count": 193,
+  "eval_count": 7,
+  "label_counts": {
+    "falha_tecnica": 0,
+    "incompatibilidade_texto_audio": 7,
+    "intervalo_invalido": 142,
+    "palavra_ausente": 5,
+    "divergencia_elevada": 4,
+    "divergencia_moderada": 1,
+    "concordancia_elevada": 41
+  },
+  "critical_count": 159,
+  "critical": [
+    {
+      "id": "cvb3fb57-0133-dev",
+      "split": "dev",
+      "text": "Circundou todo o perímetro urbano",
+      "classification": {
+        "labels": [
+          "incompatibilidade_texto_audio",
+          "intervalo_invalido",
+          "palavra_ausente",
+          "divergencia_elevada"
+        ],
+        "primary": "incompatibilidade_texto_audio",
+        "priority": 1,
+        "needs_investigation": true,
+        "disclaimer": "A concordância entre motores não prova que o alinhamento esteja correcto. A precisão temporal real só pode estimar-se com referências independentes e fiáveis (anotação humana ou alinhamento fonético validado). A ausência de erros detectados não é precisão comprovada."
+      },
+      "comparison": {
+        "word_count": 5,
+        "mapped_a": 4,
+        "mapped_b": 5,
+        "missing_a": [
+          0
+        ],
+        "missing_b": [],
+        "repeats_in_text": [],
+        "order_ok_a": true,
+        "invalid_a": [
+          {
+            "index": 1,
+            "type": "ZERO_LENGTH",
+            "message": "duração zero"
+          },
+          {
+            "index": 2,
+            "type": "ZERO_LENGTH",
+            "message": "duração zero"
+          },
+          {
+            "index": 3,
+            "type": "ZERO_LENGTH",
+            "message": "duração zero"
+          },
+          {
+            "index": 4,
+            "type": "ZERO_LENGTH",
+            "message": "duração zero"
+          }
+        ],
+        "invalid_b": [],
+        "median_divergence_ms": 2204,
+        "mean_divergence_ms": 1969.0,
+        "p95_divergence_ms": 2204,
+        "start_errors_ms": [
+          2244,
+          2204,
+          2084,
+          1344
+        ],
+        "end_errors_ms": [
+          2204,
+          2084,
+          1344,
+          0
+        ],
+        "speech_ms": 320,
+        "silence_word_hits_a": 0,
+        "possible_mismatch": true,
+        "speech_expected_ratio": 0.1523809523809524
+      },
+      "wav_rel": "../wav/cvb3fb57-0133-dev.wav"
+    },
+    {
+      "id": "cvb3fb57-0091-dev",
+      "split": "dev",
+      "text": "Condenação por sentença final, que implica a desqualificação para cargo público.",
+      "classification": {
+        "labels": [
+          "incompatibilidade_texto_audio",
+          "intervalo_invalido",
+          "palavra_ausente",
+          "divergencia_elevada"
+        ],
+        "primary": "incompatibilidade_texto_audio",
+        "priority": 1,
+        "needs_investigation": true,
+        "disclaimer": "A concordância entre motores não prova que o alinhamento esteja correcto. A precisão temporal real só pode estimar-se com referências independentes e fiáveis (anotação humana ou alinhamento fonético validado). A ausência de erros detectados não é precisão comprovada."
+      },
+      "comparison": {
+        "word_count": 11,
+        "mapped_a": 10,
+        "mapped_b": 11,
+        "missing_a": [
+          0
+        ],
+        "missing_b": [],
+        "repeats_in_text": [],
+        "order_ok_a": true,
+        "invalid_a": [
+          {
+            "index": 9,
+            "type": "ZERO_LENGTH",
+            "message": "duração zero"
+          },
+          {
+            "index": 10,
+            "type": "ZERO_LENGTH",
+            "message": "duração zero"
+          }
+        ],
+        "invalid_b": [],
+        "median_divergence_ms": 2132,
+        "mean_divergence_ms": 1837.9,
+        "p95_divergence_ms": 2589,
+        "start_errors_ms": [
+          274,
+          861,
+          1308,
+          1715,
+          2242,
+          2589,
+          3036,
+          2510,
+          2132,
+          1712
+        ],
+        "end_errors_ms": [
+          861,
+          1308,
+          1715,
+          2242,
+          2589,
+          3036,
+          2503,
+          2132,
+          1712,
+          0
+        ],
+        "speech_ms": 820,
+        "silence_word_hits_a": 6,
+        "possible_mismatch": true,
+        "speech_expected_ratio": 0.16977225672877846
+      },
+      "wav_rel": "../wav/cvb3fb57-0091-dev.wav"
+    },
+    {
+      "id": "cvb3fb57-0127-dev",
+      "split": "dev",
+      "text": "Onde há fumaça, também há fogo.",
+      "classification": {
+        "labels": [
+          "incompatibilidade_texto_audio",
+          "intervalo_invalido",
+          "palavra_ausente",
+          "divergencia_elevada"
+        ],
+        "primary": "incompatibilidade_texto_audio",
+        "priority": 1,
+        "needs_investigation": true,
+        "disclaimer": "A concordância entre motores não prova que o alinhamento esteja correcto. A precisão temporal real só pode estimar-se com referências independentes e fiáveis (anotação humana ou alinhamento fonético validado). A ausência de erros detectados não é precisão comprovada."
+      },
+      "comparison": {
+        "word_count": 6,
+        "mapped_a": 4,
+        "mapped_b": 6,
+        "missing_a": [
+          1,
+          4
+        ],
+        "missing_b": [],
+        "repeats_in_text": [],
+        "order_ok_a": true,
+        "invalid_a": [
+          {
+            "index": 2,
+            "type": "ZERO_LENGTH",
+            "message": "duração zero"
+          },
+          {
+            "index": 3,
+            "type": "ZERO_LENGTH",
+            "message": "duração zero"
+          },
+          {
+            "index": 5,
+            "type": "ZERO_LENGTH",
+            "message": "duração zero"
+          }
+        ],
+        "invalid_b": [],
+        "median_divergence_ms": 1848,
+        "mean_divergence_ms": 1221.0,
+        "p95_divergence_ms": 1848,
+        "start_errors_ms": [
+          0,
+          1968,
+          1848,
+          1068
+        ],
+        "end_errors_ms": [
+          2208,
+          1848,
+          1288,
+          0
+        ],
+        "speech_ms": 380,
+        "silence_word_hits_a": 1,
+        "possible_mismatch": true,
+        "speech_expected_ratio": 0.2261904761904762
+      },
+      "wav_rel": "../wav/cvb3fb57-0127-dev.wav"
+    },
+    {
+      "id": "cvb3fb57-0106-dev",
+      "split": "dev",
+      "text": "Nos conflitos individuais de interpretação e aplicação do Acordo Coletivo, o procedimento será voluntário.",
+      "classification": {
+        "labels": [
+          "incompatibilidade_texto_audio",
+          "intervalo_invalido",
+          "divergencia_elevada"
+        ],
+        "primary": "incompatibilidade_texto_audio",
+        "priority": 1,
+        "needs_investigation": true,
+        "disclaimer": "A concordância entre motores não prova que o alinhamento esteja correcto. A precisão temporal real só pode estimar-se com referências independentes e fiáveis (anotação humana ou alinhamento fonético validado). A ausência de erros detectados não é precisão comprovada."
+      },
+      "comparison": {
+        "word_count": 14,
+        "mapped_a": 14,
+        "mapped_b": 14,
+        "missing_a": [],
+        "missing_b": [],
+        "repeats_in_text": [],
+        "order_ok_a": true,
+        "invalid_a": [
+          {
+            "index": 9,
+            "type": "ZERO_LENGTH",
+            "message": "duração zero"
+          },
+          {
+            "index": 10,
+            "type": "ZERO_LENGTH",
+            "message": "duração zero"
+          },
+          {
+            "index": 11,
+            "type": "ZERO_LENGTH",
+            "message": "duração zero"
+          },
+          {
+            "index": 12,
+            "type": "ZERO_LENGTH",
+            "message": "duração zero"
+          },
+          {
+            "index": 13,
+            "type": "ZERO_LENGTH",
+            "message": "duração zero"
+          }
+        ],
+        "invalid_b": [],
+        "median_divergence_ms": 1670,
+        "mean_divergence_ms": 1555.5714285714287,
+        "p95_divergence_ms": 2852,
+        "start_errors_ms": [
+          0,
+          342,
+          176,
+          414,
+          1152,
+          1670,
+          2128,
+          2566,
+          3310,
+          2852,
+          2492,
+          2392,
+          1272,
+          1012
+        ],
+        "end_errors_ms": [
+          342,
+          176,
+          414,
+          1152,
+          1670,
+          2128,
+          2566,
+          3304,
+          2852,
+          2492,
+          2392,
+          1272,
+          1012,
+          0
+        ],
+        "speech_ms": 840,
+        "silence_word_hits_a": 8,
+        "possible_mismatch": true,
+        "speech_expected_ratio": 0.12903225806451613
+      },
+      "wav_rel": "../wav/cvb3fb57-0106-dev.wav"
+    },
+    {
+      "id": "cvb3fb57-0144-dev",
+      "split": "dev",
+      "text": "Considero-me idealista, e tenho propósitos firmes que me instam a contribuir",
+      "classification": {
+        "labels": [
+          "incompatibilidade_texto_audio",
+          "intervalo_invalido",
+          "palavra_ausente",
+          "divergencia_elevada"
+        ],
+        "primary": "incompatibilidade_texto_audio",
+        "priority": 1,
+        "needs_investigation": true,
+        "disclaimer": "A concordância entre motores não prova que o alinhamento esteja correcto. A precisão temporal real só pode estimar-se com referências independentes e fiáveis (anotação humana ou alinhamento fonético validado). A ausência de erros detectados não é precisão comprovada."
+      },
+      "comparison": {
+        "word_count": 11,
+        "mapped_a": 10,
+        "mapped_b": 11,
+        "missing_a": [
+          0
+        ],
+        "missing_b": [],
+        "repeats_in_text": [],
+        "order_ok_a": true,
+        "invalid_a": [
+          {
+            "index": 9,
+            "type": "ZERO_LENGTH",
+            "message": "duração zero"
+          },
+          {
+            "index": 10,
+            "type": "ZERO_LENGTH",
+            "message": "duração zero"
+          }
+        ],
+        "invalid_b": [],
+        "median_divergence_ms": 1408,
+        "mean_divergence_ms": 1145.6,
+        "p95_divergence_ms": 1729,
+        "start_errors_ms": [
+          238,
+          83,
+          564,
+          865,
+          1147,
+          1408,
+          1729,
+          2050,
+          1716,
+          1656
+        ],
+        "end_errors_ms": [
+          83,
+          564,
+          865,
+          586,
+          1408,
+          1729,
+          2050,
+          1716,
+          1656,
+          0
+        ],
+        "speech_ms": 780,
+        "silence_word_hits_a": 7,
+        "possible_mismatch": true,
+        "speech_expected_ratio": 0.16883116883116883
+      },
+      "wav_rel": "../wav/cvb3fb57-0144-dev.wav"
+    },
+    {
+      "id": "cvb3fb57-0071-dev",
+      "split": "dev",
+      "text": "Os setores que estão no estabelecimento devem ser anotados e justificados.",
+      "classification": {
+        "labels": [
+          "incompatibilidade_texto_audio",
+          "palavra_ausente",
+          "divergencia_elevada"
+        ],
+        "primary": "incompatibilidade_texto_audio",
+        "priority": 1,
+        "needs_investigation": true,
+        "disclaimer": "A concordância entre motores não prova que o alinhamento esteja correcto. A precisão temporal real só pode estimar-se com referências independentes e fiáveis (anotação humana ou alinhamento fonético validado). A ausência de erros detectados não é precisão comprovada."
+      },
+      "comparison": {
+        "word_count": 11,
+        "mapped_a": 10,
+        "mapped_b": 11,
+        "missing_a": [
+          0
+        ],
+        "missing_b": [],
+        "repeats_in_text": [],
+        "order_ok_a": true,
+        "invalid_a": [],
+        "invalid_b": [],
+        "median_divergence_ms": 1023,
+        "mean_divergence_ms": 873.7,
+        "p95_divergence_ms": 1381,
+        "start_errors_ms": [
+          111,
+          78,
+          547,
+          776,
+          1105,
+          734,
+          1023,
+          1292,
+          1381,
+          1690
+        ],
+        "end_errors_ms": [
+          78,
+          547,
+          776,
+          1105,
+          734,
+          1023,
+          1292,
+          1381,
+          1690,
+          0
+        ],
+        "speech_ms": 660,
+        "silence_word_hits_a": 8,
+        "possible_mismatch": true,
+        "speech_expected_ratio": 0.14732142857142858
+      },
+      "wav_rel": "../wav/cvb3fb57-0071-dev.wav"
+    },
+    {
+      "id": "cvb3fb57-0064-dev",
+      "split": "dev",
+      "text": "Dos pais quando eles são velhos, não negligencie um ponto deles.",
+      "classification": {
+        "labels": [
+          "incompatibilidade_texto_audio",
+          "palavra_ausente",
+          "divergencia_elevada"
+        ],
+        "primary": "incompatibilidade_texto_audio",
+        "priority": 1,
+        "needs_investigation": true,
+        "disclaimer": "A concordância entre motores não prova que o alinhamento esteja correcto. A precisão temporal real só pode estimar-se com referências independentes e fiáveis (anotação humana ou alinhamento fonético validado). A ausência de erros detectados não é precisão comprovada."
+      },
+      "comparison": {
+        "word_count": 11,
+        "mapped_a": 10,
+        "mapped_b": 11,
+        "missing_a": [
+          0
+        ],
+        "missing_b": [],
+        "repeats_in_text": [],
+        "order_ok_a": true,
+        "invalid_a": [],
+        "invalid_b": [],
+        "median_divergence_ms": 865,
+        "mean_divergence_ms": 736.9,
+        "p95_divergence_ms": 1149,
+        "start_errors_ms": [
+          479,
+          218,
+          223,
+          504,
+          865,
+          946,
+          887,
+          808,
+          1149,
+          1290
+        ],
+        "end_errors_ms": [
+          218,
+          223,
+          504,
+          865,
+          946,
+          887,
+          808,
+          1149,
+          1290,
+          0
+        ],
+        "speech_ms": 560,
+        "silence_word_hits_a": 8,
+        "possible_mismatch": true,
+        "speech_expected_ratio": 0.15384615384615385
+      },
+      "wav_rel": "../wav/cvb3fb57-0064-dev.wav"
+    },
+    {
+      "id": "cv142746-0036-dev",
+      "split": "dev",
+      "text": "Em loucura e ar, dê-lhes largura.",
+      "classification": {
+        "labels": [
+          "intervalo_invalido",
+          "divergencia_elevada"
+        ],
+        "primary": "intervalo_invalido",
+        "priority": 2,
+        "needs_investigation": true,
+        "disclaimer": "A concordância entre motores não prova que o alinhamento esteja correcto. A precisão temporal real só pode estimar-se com referências independentes e fiáveis (anotação humana ou alinhamento fonético validado). A ausência de erros detectados não é precisão comprovada."
+      },
+      "comparison": {
+        "word_count": 6,
+        "mapped_a": 6,
+        "mapped_b": 6,
+        "missing_a": [],
+        "missing_b": [],
+        "repeats_in_text": [],
+        "order_ok_a": true,
+        "invalid_a": [
+          {
+            "index": 2,
+            "type": "ZERO_LENGTH",
+            "message": "duração zero"
+          },
+          {
+            "index": 3,
+            "type": "ZERO_LENGTH",
+            "message": "duração zero"
+          },
+          {
+            "index": 4,
+            "type": "ZERO_LENGTH",
+            "message": "duração zero"
+          },
+          {
+            "index": 5,
+            "type": "ZERO_LENGTH",
+            "message": "duração zero"
+          }
+        ],
+        "invalid_b": [],
+        "median_divergence_ms": 4720,
+        "mean_divergence_ms": 3206.6666666666665,
+        "p95_divergence_ms": 4860,
+        "start_errors_ms": [
+          0,
+          2260,
+          4940,
+          4860,
+          4720,
+          2460
+        ],
+        "end_errors_ms": [
+          2260,
+          4940,
+          4860,
+          4720,
+          2460,
+          0
+        ],
+        "speech_ms": 1220,
+        "silence_word_hits_a": 2,
+        "possible_mismatch": false,
+        "speech_expected_ratio": 0.6703296703296703
+      },
+      "wav_rel": "../wav/cv142746-0036-dev.wav"
+    }
+  ],
+  "mean_elapsed_a_ms": 2214.144846000272,
+  "mean_elapsed_b_ms": 9.7130334997928,
+  "second_engine": "energy_dtw",
+  "license": "CC-0 (Mozilla Common Voice); as gravações não entram no Git",
+  "import_stats": {
+    "source_rows": 2093,
+    "pt_pt_eligible": 365,
+    "requested": 200,
+    "license": "CC-0 (Mozilla Common Voice); as gravações não entram no Git",
+    "speakers_note": "Os relatórios usam locutor_anon (hash); não se tenta identificar pessoas.",
+    "selected": 200,
+    "speakers": 7,
+    "dev": 193,
+    "eval": 7,
+    "shortfall": 0,
+    "source": "huggingface:remynd/common_voice_pt_pt (derivado de Common Voice; não publicado neste Git)"
+  },
+  "disclaimer": "A concordância entre motores não prova que o alinhamento esteja correcto. A precisão temporal real só pode estimar-se com referências independentes e fiáveis (anotação humana ou alinhamento fonético validado). A ausência de erros detectados não é precisão comprovada.",
+  "precision_claim": "não estimada — sem referência temporal independente fiável",
+  "memory": "não mensurável neste ambiente",
+  "fingerprint": "acfd08293194c58bc274ec1cd503aa9b354597004f86f3b11b541a994486812f",
+  "fingerprint_second": "6e5d8bd632d6d533f6ee24ef45f372df992ab68d063bcc6b74c8bf9ef2e315f9",
+  "regression": {
+    "previous_fingerprint": "698879c54d4c1b30ccf6bece121d3297d6b7e02668977680d050e20511edc402",
+    "current_fingerprint": "acfd08293194c58bc274ec1cd503aa9b354597004f86f3b11b541a994486812f",
+    "mapped_pct_a_delta": 0.37313432835821914,
+    "mapped_pct_b_delta": 0.0,
+    "critical_delta": -2,
+    "label_delta": {
+      "concordancia_elevada": 2,
+      "divergencia_elevada": -15,
+      "divergencia_moderada": 1,
+      "falha_tecnica": 0,
+      "incompatibilidade_texto_audio": 0,
+      "intervalo_invalido": 17,
+      "palavra_ausente": -5
+    },
+    "same_fingerprint": false,
+    "note": "Diferenças de classificação entre versões/ensaios; não medem precisão absoluta."
+  },
+  "history_files": [
+    "20261117T014114Z.json",
+    "20261117T014908Z.json",
+    "20261117T020758Z.json"
+  ],
+  "history_saved": "20261117T020758Z.json"
+}

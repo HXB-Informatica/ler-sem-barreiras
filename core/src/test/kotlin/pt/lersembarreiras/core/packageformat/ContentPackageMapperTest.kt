@@ -35,6 +35,10 @@ class ContentPackageMapperTest {
         assertTrue(decoded.words[2].manuallyAdjusted)
         val restored = ContentPackageMapper.fromPackage(decoded, "contents/abc/audio.wav")
         assertEquals(content.id, restored.id)
-        assertEquals(content.words, restored.words)
+        assertEquals(content.words.map { it.text }, restored.words.map { it.text })
+        assertEquals(content.words.map { it.startMs }, restored.words.map { it.startMs })
+        assertEquals(listOf(0, 1, 2), restored.words.map { it.index })
+        assertTrue(restored.words.all { it.id.isNotBlank() })
+        assertTrue(restored.words[2].manuallyAdjusted)
     }
 }
