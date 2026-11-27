@@ -17,7 +17,9 @@ export function AppHeader({ title, onBack, onAbout, accessibilityBackLabel = 'Vo
         accessibilityLabel={accessibilityBackLabel}
         hitSlop={8}
         style={styles.iconBtn}>
-        <Text style={styles.icon}>←</Text>
+        <Text style={styles.backGlyph} importantForAccessibility="no">
+          ‹
+        </Text>
       </Pressable>
       <Text style={styles.title} numberOfLines={2} accessibilityRole="header">
         {title}
@@ -29,10 +31,12 @@ export function AppHeader({ title, onBack, onAbout, accessibilityBackLabel = 'Vo
           accessibilityLabel="Sobre o projeto"
           hitSlop={8}
           style={styles.iconBtn}>
-          <Text style={styles.icon}>i</Text>
+          <Text style={styles.infoGlyph} importantForAccessibility="no">
+            i
+          </Text>
         </Pressable>
       ) : (
-        <View style={styles.iconBtn} />
+        <View style={styles.spacer} importantForAccessibility="no" accessibilityElementsHidden />
       )}
     </View>
   );
@@ -54,9 +58,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  icon: {
-    fontSize: 22,
+  spacer: {
+    minWidth: 48,
+    minHeight: 48,
+  },
+  backGlyph: {
+    fontSize: 34,
+    lineHeight: 36,
     fontWeight: '700',
+    color: colors.primaryDeep,
+    marginTop: -2,
+  },
+  infoGlyph: {
+    fontSize: 20,
+    fontWeight: '800',
     color: colors.primaryDeep,
   },
   title: {

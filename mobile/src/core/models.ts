@@ -45,11 +45,13 @@ export function isReadyForStudent(item: ReadingContent): boolean {
   if (item.availableToStudents === false) {
     return false;
   }
-  const synced = item.syncStatus === 'COMPLETED' || item.syncStatus === 'COMPLETED_WITH_GAPS';
-  if (item.availableToStudents === true) {
-    return Boolean(item.audioRelativePath) && synced;
+  if (!item.audioRelativePath || !item.text.trim()) {
+    return false;
   }
-  return Boolean(item.audioRelativePath) && synced;
+  if (item.syncStatus !== 'COMPLETED') {
+    return false;
+  }
+  return reviewCount(item) === 0;
 }
 
 export type ContentPackage = {

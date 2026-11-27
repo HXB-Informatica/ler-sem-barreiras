@@ -13,8 +13,11 @@ Decisões aplicadas na app React Native, sem alterar o motor de sincronização.
 
 - Criação em quatro etapas (texto, narração, sincronizar, guardar).
 - **Guardar rascunho** define `availableToStudents: false`.
-- **Disponibilizar para leitura** exige texto, áudio e sincronização `COMPLETED` ou `COMPLETED_WITH_GAPS`.
-- Conteúdos antigos sem o campo novo continuam visíveis aos alunos se já tiverem áudio e sincronização concluída.
+- **Disponibilizar para leitura** exige texto, áudio e sincronização `COMPLETED`, sem palavras por rever.
+- `COMPLETED_WITH_GAPS`, falhas e rascunhos (`availableToStudents: false`) não entram na biblioteca do aluno.
+- Conteúdos antigos sem o campo novo continuam visíveis só se já tiverem áudio e sincronização `COMPLETED` sem palavras por rever.
+- No cabeçalho, o espaço da direita só mostra o botão «Sobre» quando existe; não se desenha um círculo vazio.
+- As quatro etapas do professor cabem numa única linha em ecrãs estreitos.
 - Aviso ao sair com alterações por guardar.
 
 ## Layout

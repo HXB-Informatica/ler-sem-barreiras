@@ -82,4 +82,21 @@ describe('ContentRepository', () => {
     });
     expect(await repo.listReadyForStudent()).toHaveLength(0);
   });
+
+  it('keeps exercises with words still to review out of the student library', async () => {
+    const repo = new ContentRepository(createMemoryBackend());
+    await repo.save({
+      id: 'gaps',
+      title: 'Por rever',
+      text: 'Olá',
+      audioRelativePath: 'audio.wav',
+      durationMs: 100,
+      words: [],
+      syncStatus: 'COMPLETED_WITH_GAPS',
+      createdAtEpochMs: 1,
+      updatedAtEpochMs: 1,
+      availableToStudents: true,
+    });
+    expect(await repo.listReadyForStudent()).toHaveLength(0);
+  });
 });

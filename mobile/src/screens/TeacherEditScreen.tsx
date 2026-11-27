@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { align } from '../core/alignmentEngine';
 import { LsbException } from '../core/lsbErrors';
 import {
   alignmentStatus,
   isReadyForStudent,
   requiresReview,
+  reviewCount,
   type ReadingContent,
   type WordTiming,
 } from '../core/models';
@@ -190,8 +191,8 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
       setError('É preciso texto e narração para disponibilizar a leitura.');
       return;
     }
-    if (draft.syncStatus !== 'COMPLETED' && draft.syncStatus !== 'COMPLETED_WITH_GAPS') {
-      setError('Sincronize a narração antes de disponibilizar aos alunos.');
+    if (draft.syncStatus !== 'COMPLETED' || reviewCount(draft) > 0) {
+      setError('Reveja as palavras assinaladas antes de disponibilizar aos alunos.');
       return;
     }
     try {
@@ -334,10 +335,9 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
   };
 
   const draft = current();
+  const pendingReview = draft.words.filter(requiresReview).length;
   const canPublish =
-    Boolean(text.trim()) &&
-    hasAudio &&
-    (draft.syncStatus === 'COMPLETED' || draft.syncStatus === 'COMPLETED_WITH_GAPS');
+    Boolean(text.trim()) && hasAudio && draft.syncStatus === 'COMPLETED' && pendingReview === 0;
 
   return (
     <ScreenShell>
@@ -463,7 +463,11 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
               accessibilityLabel="Disponibilizar para leitura no modo aluno"
             />
             {!canPublish ? (
-              <Text style={styles.hint}>Ainda faltam a narração ou a sincronização.</Text>
+              <Text style={styles.hint}>
+                {pendingReview > 0
+                  ? `Há ${pendingReview} palavras para rever na etapa 3. Só depois o conteúdo pode ir para o Modo Aluno.`
+                  : 'Ainda faltam a narração ou a sincronização concluída sem palavras por rever.'}
+              </Text>
             ) : null}
           </View>
         ) : null}
@@ -525,23 +529,30 @@ function WordTimeRow({
 
 function StepTabs({ step, onChange }: { step: Step; onChange: (step: Step) => void }) {
   const items: { id: Step; label: string }[] = [
-    { id: 1, label: '1 Texto' },
-    { id: 2, label: '2 Narração' },
-    { id: 3, label: '3 Sincronizar' },
-    { id: 4, label: '4 Guardar' },
+    { id: 1, label: 'Texto' },
+    { id: 2, label: 'Narração' },
+    { id: 3, label: 'Sincronizar' },
+    { id: 4, label: 'Guardar' },
   ];
   return (
-    <View style={styles.tabs}>
-      {items.map(item => (
-        <View key={item.id} style={styles.tab}>
-          <Button
-            label={item.label}
+    <View style={styles.tabs} accessibilityRole="tablist">
+      {items.map(item => {
+        const active = step === item.id;
+        return (
+          <Pressable
+            key={item.id}
             onPress={() => onChange(item.id)}
-            variant={step === item.id ? 'primary' : 'secondary'}
-            accessibilityLabel={`${item.label}${step === item.id ? ', etapa actual' : ''}`}
-          />
-        </View>
-      ))}
+            style={[styles.step, active ? styles.stepActive : null]}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: active }}
+            accessibilityLabel={`Etapa ${item.id}, ${item.label}${active ? ', actual' : ''}`}>
+            <Text style={[styles.stepIndex, active ? styles.stepIndexActive : null]}>{item.id}</Text>
+            <Text numberOfLines={1} style={[styles.stepLabel, active ? styles.stepLabelActive : null]}>
+              {item.label}
+            </Text>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }
@@ -591,6 +602,39 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   gap: { height: 10 },
-  tabs: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
-  tab: { flexGrow: 1, flexBasis: '47%' },
+  tabs: {
+    flexDirection: 'row',
+    gap: 4,
+    marginBottom: 12,
+  },
+  step: {
+    flex: 1,
+    minHeight: 48,
+    minWidth: 0,
+    borderRadius: 12,
+    backgroundColor: colors.secondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 2,
+  },
+  stepActive: {
+    backgroundColor: colors.primary,
+  },
+  stepIndex: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: colors.primaryDeep,
+  },
+  stepIndexActive: {
+    color: colors.primaryText,
+  },
+  stepLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.primaryDeep,
+  },
+  stepLabelActive: {
+    color: colors.primaryText,
+  },
 });
