@@ -13,7 +13,7 @@ O projeto pertence à iniciativa da escola. A HXB é identificada como parceiro 
 
 ## Identidade visual
 
-Paleta, ícone de lançador (clássico e adaptativo) e ecrã **Sobre o projeto** estão descritos em [docs/branding/README.md](docs/branding/README.md). A página Sobre funciona offline e só lista apoiantes aprovados pela escola.
+Paleta, ícone de lançador (clássico e adaptativo) e ecrã **Sobre o projeto** estão descritos em [docs/branding/README.md](docs/branding/README.md). A página Sobre funciona offline e só lista apoiantes aprovados pela escola. Decisões de UX e acessibilidade: [docs/UX_ACESSIBILIDADE.md](docs/UX_ACESSIBILIDADE.md).
 
 ## Princípios
 

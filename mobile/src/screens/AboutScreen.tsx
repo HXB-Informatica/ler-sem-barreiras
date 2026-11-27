@@ -1,9 +1,10 @@
-import { Alert, Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert, Linking, StyleSheet, Text, View } from 'react-native';
 import { approvedSupporters, installedVersion, PROJECT } from '../about/projectInfo';
-import { colors, radii, spacing, type } from '../theme';
+import { colors, radii, type } from '../theme';
+import { AppHeader } from '../ui/AppHeader';
 import { BrandMark } from '../ui/BrandMark';
 import { Button } from '../ui/Button';
+import { ScreenShell } from '../ui/ScreenShell';
 
 type Props = { onBack: () => void };
 
@@ -15,44 +16,32 @@ export function AboutScreen({ onBack }: Props) {
     try {
       await Linking.openURL(PROJECT.githubUrl);
     } catch {
-      Alert.alert(
-        'Repositório',
-        `A página precisa de um navegador. Endereço: ${PROJECT.githubUrl}`,
-      );
+      Alert.alert('Repositório', `Endereço: ${PROJECT.githubUrl}`);
     }
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <Button label="Voltar" onPress={onBack} variant="secondary" />
-      </View>
-      <ScrollView contentContainerStyle={styles.body}>
+    <ScreenShell scroll>
+      <AppHeader title="Sobre o projeto" onBack={onBack} />
+      <View style={styles.body}>
         <BrandMark size={96} />
-        <Text style={styles.title} accessibilityRole="header">
-          Sobre o projeto
-        </Text>
         <Text style={styles.version}>
           Versão {version.versionName} ({version.versionCode})
         </Text>
-        <Section title="O que é">
-          {PROJECT.name} é uma aplicação educativa, gratuita e integralmente offline. {PROJECT.mission}
-        </Section>
-        <Section title="Origem e iniciativa">
-          {PROJECT.school} ({PROJECT.schoolShort}) é a entidade promotora e responsável pela coordenação
+        <Card title="O que é">
+          {PROJECT.name} é uma aplicação educativa, gratuita e integralmente offline. Permite acompanhar
+          as palavras escritas através de narrações sincronizadas, em especial para alunos com
+          dificuldades de leitura e comunicação.
+        </Card>
+        <Card title="Origem e iniciativa">
+          {PROJECT.school} é a entidade promotora da iniciativa e responsável pela coordenação
           pedagógica.
-        </Section>
-        <Section title="Para quem">
-          {PROJECT.audience}
-        </Section>
-        <Section title="Como funciona">
-          {PROJECT.howItWorks}
-        </Section>
-        <Section title="Desenvolvimento tecnológico">
-          {PROJECT.techPartner} participa como {PROJECT.techRole}
-        </Section>
+        </Card>
+        <Card title="Desenvolvimento tecnológico">
+          {PROJECT.techPartner}. {PROJECT.techRole}
+        </Card>
         <View style={styles.card} accessibilityRole="summary">
-          <Text style={styles.sectionTitle}>Apoiantes e financiadores</Text>
+          <Text style={styles.sectionTitle}>Parceiros e apoiantes</Text>
           {supporters.length === 0 ? (
             <Text style={styles.p}>
               Ainda não há entidades aprovadas pela escola para identificação nesta página. Nomes e
@@ -67,10 +56,11 @@ export function AboutScreen({ onBack }: Props) {
             ))
           )}
         </View>
-        <Section title="Código aberto">
-          A aplicação é gratuita para outras escolas e instituições. O código está publicado sob a
-          licença {PROJECT.licenseName}. {PROJECT.copyrightNote}
-        </Section>
+        <Card title="Código aberto">
+          A aplicação é gratuita e pode ser usada por outras escolas e instituições. O código-fonte está
+          publicado sob a licença {PROJECT.licenseName}. Programadores externos podem contribuir.{' '}
+          {PROJECT.copyrightNote}
+        </Card>
         <Button
           label="Abrir o repositório GitHub"
           onPress={openGithub}
@@ -78,12 +68,13 @@ export function AboutScreen({ onBack }: Props) {
           accessibilityLabel="Abrir o repositório GitHub no navegador, se existir ligação"
         />
         <Text style={styles.meta}>{PROJECT.githubUrl}</Text>
-      </ScrollView>
-    </SafeAreaView>
+        <Text style={styles.meta}>Licença {PROJECT.licenseName}</Text>
+      </View>
+    </ScreenShell>
   );
 }
 
-function Section({ title, children }: { title: string; children: string }) {
+function Card({ title, children }: { title: string; children: string }) {
   return (
     <View style={styles.card}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -93,11 +84,8 @@ function Section({ title, children }: { title: string; children: string }) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
-  header: { padding: spacing.md },
-  body: { paddingHorizontal: 20, paddingBottom: 40, gap: 12 },
-  title: { ...type.title, marginTop: 8 },
-  version: { ...type.meta, marginBottom: 8 },
+  body: { gap: 12, paddingBottom: 24 },
+  version: { ...type.meta, textAlign: 'center', marginBottom: 8 },
   card: {
     backgroundColor: colors.surface,
     borderRadius: radii.md,
@@ -106,7 +94,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.primaryDeep },
   p: { ...type.body },
-  meta: { ...type.meta, marginTop: 8 },
+  meta: { ...type.meta, marginTop: 4 },
   supporter: { gap: 2 },
   supporterName: { fontSize: 17, fontWeight: '700', color: colors.text },
 });

@@ -1,4 +1,4 @@
-import { Image, StyleSheet, View } from 'react-native';
+import { Image } from 'react-native';
 
 type Props = {
   size?: number;
@@ -6,18 +6,12 @@ type Props = {
 
 export function BrandMark({ size = 112 }: Props) {
   return (
-    <View
-      style={[styles.wrap, { width: size, height: size, borderRadius: size * 0.22 }]}
+    <Image
+      source={require('../assets/lsb_brand.png')}
       accessibilityRole="image"
-      accessibilityLabel="Ícone do Ler sem Barreiras">
-      <Image source={require('../assets/lsb_brand.png')} style={{ width: size, height: size }} />
-    </View>
+      accessibilityLabel="Logótipo do Ler sem Barreiras"
+      style={{ width: size, height: size, alignSelf: 'center' }}
+      resizeMode="contain"
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  wrap: {
-    overflow: 'hidden',
-    alignSelf: 'center',
-  },
-});

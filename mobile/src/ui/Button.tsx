@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
   ghost: {
     borderWidth: 1,
     borderColor: colors.sky,
-    minHeight: 48,
+    minHeight: 56,
   },
   label: {
     fontSize: 18,

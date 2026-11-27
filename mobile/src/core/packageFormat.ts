@@ -19,6 +19,7 @@ export function toPackage(content: ReadingContent): ContentPackage {
     syncStatus: content.syncStatus,
     createdAtEpochMs: content.createdAtEpochMs,
     updatedAtEpochMs: content.updatedAtEpochMs,
+    availableToStudents: content.availableToStudents,
   };
 }
 
@@ -33,6 +34,7 @@ export function fromPackage(pkg: ContentPackage, audioRelativePath?: string | nu
     syncStatus: pkg.syncStatus,
     createdAtEpochMs: pkg.createdAtEpochMs,
     updatedAtEpochMs: pkg.updatedAtEpochMs,
+    availableToStudents: pkg.availableToStudents,
   };
 }
 

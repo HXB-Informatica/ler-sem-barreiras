@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LsbException } from '../core/lsbErrors';
-import type { ReadingContent } from '../core/models';
+import { isReadyForStudent, type ReadingContent } from '../core/models';
 import { pickFile, unzipWhitelisted } from '../native/bridge';
 import type { ContentRepository } from '../storage/contentRepository';
-import { colors, radii, type } from '../theme';
+import { colors, type } from '../theme';
+import { AppHeader } from '../ui/AppHeader';
 import { Button } from '../ui/Button';
-import { ScreenHeader } from '../ui/ScreenHeader';
+import { ContentCard } from '../ui/ContentCard';
+import { EmptyState } from '../ui/EmptyState';
+import { ScreenShell } from '../ui/ScreenShell';
 import { StatusChip } from '../ui/StatusChip';
 
 type Props = {
@@ -71,54 +73,55 @@ export function TeacherListScreen({ repository, onBack, onCreate, onOpen, onAbou
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <ScreenHeader
-        title="Modo Professor"
-        onBack={onBack}
-        onAbout={onAbout}
-        extra={
-          <Button
-            label="Importar .lsb"
-            onPress={importLsb}
-            disabled={busy}
-            accessibilityLabel="Importar exercício .lsb"
-            variant="secondary"
-          />
-        }
-      />
+    <ScreenShell>
+      <AppHeader title="Modo Professor" onBack={onBack} onAbout={onAbout} />
+      <Button label="Criar conteúdo" onPress={onCreate} accessibilityLabel="Criar um conteúdo novo" />
+      <View style={styles.importWrap}>
+        <Button
+          label="Importar exercício .lsb"
+          onPress={importLsb}
+          disabled={busy}
+          variant="ghost"
+          accessibilityLabel="Importar exercício .lsb"
+        />
+      </View>
       {contents.length === 0 ? (
-        <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>Ainda não existem conteúdos neste tablet.</Text>
-          <Text style={styles.lead}>
-            Crie um texto, grave a narração e sincronize automaticamente, tudo sem internet. Também
-            pode importar um exercício .lsb do Studio.
-          </Text>
-          <Button label="Criar conteúdo" onPress={onCreate} />
-        </View>
+        <EmptyState
+          title="Ainda não existem conteúdos neste tablet."
+          message="Crie um texto, grave a narração e sincronize. Tudo fica neste tablet, sem internet."
+        />
       ) : (
         <ScrollView contentContainerStyle={styles.list}>
-          {contents.map(item => (
-            <Pressable
-              key={item.id}
-              onPress={() => onOpen(item.id)}
-              accessibilityRole="button"
-              accessibilityLabel={`Abrir ${item.title}, ${item.syncStatus}`}
-              style={styles.card}>
-              <View style={styles.cardBody}>
-                <Text style={styles.cardTitle}>{item.title}</Text>
-                <StatusChip status={item.syncStatus} />
-                <Text style={styles.meta}>
-                  {item.audioRelativePath ? `Narração ${formatDuration(item.durationMs)}` : 'Sem narração'}
-                </Text>
-                <Text style={styles.meta}>{formatDate(item.updatedAtEpochMs)}</Text>
-              </View>
-              <Button label="Eliminar" variant="danger" onPress={() => remove(item)} accessibilityLabel={`Eliminar ${item.title}`} />
-            </Pressable>
-          ))}
-          <Button label="Criar conteúdo" onPress={onCreate} accessibilityLabel="Criar conteúdo" />
+          {contents.map(item => {
+            const ready = isReadyForStudent(item);
+            return (
+              <ContentCard
+                key={item.id}
+                title={item.title}
+                subtitle={`${item.audioRelativePath ? `Narração ${formatDuration(item.durationMs)}` : 'Sem narração'} · ${formatDate(item.updatedAtEpochMs)}`}
+                accessibilityLabel={`Abrir ${item.title}. ${ready ? 'Pronto para leitura' : 'Em preparação'}`}
+                onPress={() => onOpen(item.id)}
+                accent={ready ? colors.success : colors.teacherAccent}
+                badge={
+                  <View style={styles.badges}>
+                    <StatusChip status={item.syncStatus} />
+                    <Text style={styles.ready}>{ready ? 'Pronto para os alunos' : 'Em preparação'}</Text>
+                  </View>
+                }
+                footer={
+                  <Button
+                    label="Eliminar"
+                    variant="danger"
+                    onPress={() => remove(item)}
+                    accessibilityLabel={`Eliminar ${item.title}`}
+                  />
+                }
+              />
+            );
+          })}
         </ScrollView>
       )}
-    </SafeAreaView>
+    </ScreenShell>
   );
 }
 
@@ -144,20 +147,8 @@ function messageOf(error: unknown): string {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
-  empty: { flex: 1, justifyContent: 'center', padding: 24, gap: 16 },
-  emptyTitle: { ...type.heading, textAlign: 'center' },
-  lead: { ...type.body, textAlign: 'center', color: colors.muted },
-  list: { padding: 16, gap: 12, paddingBottom: 40 },
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    padding: 16,
-    gap: 12,
-    borderLeftWidth: 6,
-    borderLeftColor: colors.teacherAccent,
-  },
-  cardBody: { gap: 8 },
-  cardTitle: { fontSize: 20, fontWeight: '700', color: colors.text },
-  meta: { color: colors.muted, fontSize: 15 },
+  importWrap: { marginTop: 10, marginBottom: 12 },
+  list: { paddingBottom: 40, gap: 12 },
+  badges: { gap: 6 },
+  ready: { ...type.meta, fontWeight: '700', color: colors.text },
 });

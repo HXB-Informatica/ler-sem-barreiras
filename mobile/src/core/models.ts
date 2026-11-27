@@ -37,7 +37,20 @@ export type ReadingContent = {
   syncStatus: SyncStatus;
   createdAtEpochMs: number;
   updatedAtEpochMs: number;
+  /** When omitted, legacy contents stay visible if they already look ready. */
+  availableToStudents?: boolean;
 };
+
+export function isReadyForStudent(item: ReadingContent): boolean {
+  if (item.availableToStudents === false) {
+    return false;
+  }
+  const synced = item.syncStatus === 'COMPLETED' || item.syncStatus === 'COMPLETED_WITH_GAPS';
+  if (item.availableToStudents === true) {
+    return Boolean(item.audioRelativePath) && synced;
+  }
+  return Boolean(item.audioRelativePath) && synced;
+}
 
 export type ContentPackage = {
   format: string;
@@ -51,6 +64,7 @@ export type ContentPackage = {
   syncStatus: SyncStatus;
   createdAtEpochMs: number;
   updatedAtEpochMs: number;
+  availableToStudents?: boolean;
 };
 
 export const CONTENT_FORMAT_ID = 'lersembarreiras-content';

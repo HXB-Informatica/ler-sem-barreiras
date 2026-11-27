@@ -74,7 +74,7 @@ fun AboutScreen(onBack: () -> Unit) {
             AboutCard("Origem e iniciativa", "${ProjectInfo.SCHOOL} (${ProjectInfo.SCHOOL_SHORT}) é a entidade promotora e responsável pela coordenação pedagógica.")
             AboutCard("Para quem", ProjectInfo.AUDIENCE)
             AboutCard("Como funciona", ProjectInfo.HOW_IT_WORKS)
-            AboutCard("Desenvolvimento tecnológico", "${ProjectInfo.TECH_PARTNER} participa como ${ProjectInfo.TECH_ROLE}")
+            AboutCard("Desenvolvimento tecnológico", "${ProjectInfo.TECH_PARTNER}. ${ProjectInfo.TECH_ROLE}")
             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("Apoiantes e financiadores", style = MaterialTheme.typography.titleLarge)
