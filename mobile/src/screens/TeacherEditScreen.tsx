@@ -1,23 +1,41 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  ActivityIndicator,
+  Alert,
+  AppState,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { align } from '../core/alignmentEngine';
 import { LsbException } from '../core/lsbErrors';
-import { alignmentStatus, requiresReview, type ReadingContent, type WordTiming } from '../core/models';
+import {
+  alignmentStatus,
+  isReadyForStudent,
+  requiresReview,
+  reviewCount,
+  type ReadingContent,
+  type WordTiming,
+} from '../core/models';
 import {
   absolutePath,
   audioBridge,
   pickFile,
   requestMicrophone,
   transcribeLocal,
-  unzipWhitelisted,
 } from '../native/bridge';
 import type { ContentRepository } from '../storage/contentRepository';
 import { randomUuid } from '../core/uuid';
 import { ensure } from '../core/wordIdentity';
-import { colors } from '../theme';
+import { colors, radii } from '../theme';
+import { AppHeader } from '../ui/AppHeader';
 import { Button } from '../ui/Button';
+import { useLayout } from '../ui/layout';
 import { RecordingMeter } from '../ui/RecordingMeter';
+import { ScreenShell } from '../ui/ScreenShell';
 import { wavDurationMs } from '../core/wavProbe';
 import { bytesFromBase64 } from '../core/sha256';
 
@@ -27,8 +45,12 @@ type Props = {
   onBack: () => void;
 };
 
+type Step = 1 | 2 | 3 | 4;
+
 export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
+  const layout = useLayout();
   const [id] = useState(contentId ?? randomUuid());
+  const [step, setStep] = useState<Step>(1);
   const [title, setTitle] = useState('');
   const [text, setText] = useState('');
   const [words, setWords] = useState<WordTiming[]>([]);
@@ -40,15 +62,36 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [createdAt, setCreatedAt] = useState(Date.now());
   const [playing, setPlaying] = useState(false);
+  const [availableToStudents, setAvailableToStudents] = useState<boolean | undefined>(undefined);
+  const [loaded, setLoaded] = useState(!contentId);
+  const snapshot = useRef('');
   const busy = useRef(false);
-  const stopping = useRef(false);
+
+  const fingerprint = () =>
+    JSON.stringify({
+      title,
+      text,
+      hasAudio,
+      durationMs,
+      availableToStudents,
+      words: words.map(word => [word.startMs, word.endMs, word.manuallyAdjusted]),
+    });
 
   const load = useCallback(async () => {
     if (!contentId) {
+      snapshot.current = JSON.stringify({
+        title: '',
+        text: '',
+        hasAudio: false,
+        durationMs: 0,
+        availableToStudents: undefined,
+        words: [],
+      });
       return;
     }
     const existing = await repository.get(contentId);
     if (!existing) {
+      setLoaded(true);
       return;
     }
     setTitle(existing.title);
@@ -57,11 +100,27 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
     setDurationMs(existing.durationMs);
     setCreatedAt(existing.createdAtEpochMs);
     setHasAudio(Boolean(existing.audioRelativePath));
+    setAvailableToStudents(existing.availableToStudents);
+    snapshot.current = JSON.stringify({
+      title: existing.title,
+      text: existing.text,
+      hasAudio: Boolean(existing.audioRelativePath),
+      durationMs: existing.durationMs,
+      availableToStudents: existing.availableToStudents,
+      words: existing.words.map(word => [word.startMs, word.endMs, word.manuallyAdjusted]),
+    });
+    setLoaded(true);
   }, [contentId, repository]);
 
   useEffect(() => {
     load().catch(err => setError(messageOf(err)));
   }, [load]);
+
+  useEffect(() => {
+    if (loaded && !snapshot.current) {
+      snapshot.current = fingerprint();
+    }
+  }, [loaded, title, text, hasAudio]);
 
   useEffect(() => {
     return () => {
@@ -87,30 +146,88 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
     return () => clearInterval(timer);
   }, [playing]);
 
-  const current = (): ReadingContent => ({
+  const current = (overrides: Partial<ReadingContent> = {}): ReadingContent => ({
     id,
     title: title.trim() || 'Sem título',
     text,
     audioRelativePath: hasAudio ? `contents/${id}/audio.wav` : null,
     durationMs,
     words: ensure(text, words),
-    syncStatus: words.length === 0 ? 'NONE' : alignmentStatus({
-      words,
-      alignedCount: words.filter(word => word.startMs != null).length,
-      reviewCount: words.filter(requiresReview).length,
-      unusedRecognizedCount: 0,
-      intervalIssues: [],
-    }),
+    syncStatus:
+      words.length === 0
+        ? 'NONE'
+        : alignmentStatus({
+            words,
+            alignedCount: words.filter(word => word.startMs != null).length,
+            reviewCount: words.filter(requiresReview).length,
+            unusedRecognizedCount: 0,
+            intervalIssues: [],
+          }),
     createdAtEpochMs: createdAt,
     updatedAtEpochMs: Date.now(),
+    availableToStudents,
+    ...overrides,
   });
 
-  const save = async (audioBase64?: string | null) => {
+  const latest = useRef({ fingerprint, current, recording, syncing });
+  latest.current = { fingerprint, current, recording, syncing };
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', state => {
+      if (state !== 'background' && state !== 'inactive') {
+        return;
+      }
+      if (latest.current.recording || latest.current.syncing) {
+        return;
+      }
+      if (latest.current.fingerprint() === snapshot.current) {
+        return;
+      }
+      repository.save(latest.current.current({ availableToStudents: false })).catch(() => undefined);
+    });
+    return () => sub.remove();
+  }, [repository]);
+
+  const persist = async (overrides: Partial<ReadingContent> = {}, audioBase64?: string | null) => {
+    const stored = await repository.save(current(overrides), audioBase64);
+    setHasAudio(Boolean(stored.audioRelativePath));
+    setAvailableToStudents(stored.availableToStudents);
+    snapshot.current = JSON.stringify({
+      title: stored.title,
+      text: stored.text,
+      hasAudio: Boolean(stored.audioRelativePath),
+      durationMs: stored.durationMs,
+      availableToStudents: stored.availableToStudents,
+      words: stored.words.map(word => [word.startMs, word.endMs, word.manuallyAdjusted]),
+    });
+    setError(null);
+    return stored;
+  };
+
+  const saveDraft = async () => {
     try {
-      const stored = await repository.save(current(), audioBase64);
-      setHasAudio(Boolean(stored.audioRelativePath));
-      setMessage('Conteúdo guardado neste tablet.');
-      setError(null);
+      await persist({ availableToStudents: false });
+      setAvailableToStudents(false);
+      setMessage('Rascunho guardado neste tablet.');
+    } catch (err) {
+      setError(messageOf(err));
+    }
+  };
+
+  const publish = async () => {
+    const draft = current();
+    if (!draft.text.trim() || !hasAudio) {
+      setError('É preciso texto e narração para disponibilizar a leitura.');
+      return;
+    }
+    if (draft.syncStatus !== 'COMPLETED' || reviewCount(draft) > 0) {
+      setError('Reveja as palavras assinaladas antes de disponibilizar aos alunos.');
+      return;
+    }
+    try {
+      await persist({ availableToStudents: true });
+      setAvailableToStudents(true);
+      setMessage('Conteúdo disponível no Modo Aluno.');
     } catch (err) {
       setError(messageOf(err));
     }
@@ -123,12 +240,11 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
     busy.current = true;
     try {
       if (recording) {
-        stopping.current = true;
         const result = await audioBridge.stopRecording();
         setRecording(false);
         setDurationMs(result.durationMs);
         setHasAudio(true);
-        setMessage('Narração gravada. Confirme a reprodução e, se possível, sincronize.');
+        setMessage('Narração gravada.');
         return;
       }
       const granted = await requestMicrophone();
@@ -136,11 +252,10 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
         setError('É necessária permissão de microfone para gravar.');
         return;
       }
-      stopping.current = false;
       await audioBridge.stop().catch(() => undefined);
       await audioBridge.startRecording(`contents/${id}/audio.wav`);
       setRecording(true);
-      setMessage('A gravar neste tablet. Fale o texto e veja o gráfico a mexer.');
+      setMessage(null);
       setError(null);
     } catch (err) {
       setRecording(false);
@@ -158,26 +273,11 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
       }
       const bytes = bytesFromBase64(picked);
       const duration = wavDurationMs(bytes);
-      await repository.save(current(), picked);
+      await persist({}, picked);
       setDurationMs(duration);
       setHasAudio(true);
-      setMessage('Áudio importado (WAV PCM).');
+      setMessage('Áudio importado.');
       setError(null);
-    } catch (err) {
-      setError(messageOf(err));
-    }
-  };
-
-  const importLsb = async () => {
-    try {
-      const picked = await pickFile('*/*');
-      if (!picked) {
-        return;
-      }
-      const files = await unzipWhitelisted(picked);
-      const result = await repository.importLsbBase64Map(files);
-      onBack();
-      Alert.alert('Importação', result.duplicate ? 'Exercício já existente.' : 'Exercício importado.');
     } catch (err) {
       setError(messageOf(err));
     }
@@ -212,9 +312,13 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
   };
 
   const synchronize = async () => {
+    if (syncing || recording || busy.current) {
+      return;
+    }
     try {
       setSyncing(true);
       setError(null);
+      setMessage(null);
       if (!hasAudio) {
         throw new Error('Grave ou importe a narração antes de sincronizar.');
       }
@@ -226,90 +330,284 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
         audioDurationMs: durationMs,
         previousWords: words,
       });
+      const status = alignmentStatus(result);
       setWords(result.words);
-      await repository.save({
-        ...current(),
-        words: result.words,
-        syncStatus: alignmentStatus(result),
-      });
+      await persist({ words: result.words, syncStatus: status });
+      if (status === 'FAILED') {
+        setError('A sincronização não foi concluída. Reveja o texto e a narração.');
+        setMessage(null);
+        return;
+      }
       setMessage(
         result.reviewCount > 0
-          ? `Sincronizado com ${result.reviewCount} palavras a rever.`
+          ? `Sincronizado. ${result.reviewCount} palavras precisam de revisão.`
           : 'Sincronização concluída.',
       );
     } catch (err) {
       setError(messageOf(err));
+      setMessage(null);
     } finally {
       setSyncing(false);
     }
   };
 
+  const requestBack = () => {
+    if (recording) {
+      Alert.alert('A gravar', 'Pare a gravação antes de sair.');
+      return;
+    }
+    if (fingerprint() !== snapshot.current) {
+      Alert.alert('Sair sem guardar?', 'Há alterações que ainda não foram guardadas.', [
+        { text: 'Continuar a editar', style: 'cancel' },
+        { text: 'Sair', style: 'destructive', onPress: onBack },
+      ]);
+      return;
+    }
+    onBack();
+  };
+
+  const draft = current();
+  const pendingReview = draft.words.filter(requiresReview).length;
+  const canPublish =
+    Boolean(text.trim()) && hasAudio && draft.syncStatus === 'COMPLETED' && pendingReview === 0;
+
   return (
-    <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.body}>
-        <Button label="Voltar" onPress={onBack} variant="secondary" />
-        <Text style={styles.title}>Preparar conteúdo</Text>
-        <Text style={styles.label}>Título</Text>
-        <TextInput value={title} onChangeText={setTitle} style={styles.input} accessibilityLabel="Título" />
-        <Text style={styles.label}>Texto para os alunos</Text>
-        <TextInput
-          value={text}
-          onChangeText={setText}
-          style={[styles.input, styles.multiline]}
-          multiline
-          accessibilityLabel="Texto para os alunos"
-        />
-        <Text style={styles.section}>Narração</Text>
-        <RecordingMeter recording={recording} />
-        <View style={styles.row}>
-          <View style={styles.flex}>
-            <Button
-              label={recording ? 'Parar gravação' : 'Gravar'}
-              onPress={toggleRecord}
-              variant={recording ? 'danger' : 'primary'}
-              accessibilityLabel={recording ? 'Parar gravação' : 'Começar a gravar a narração'}
+    <ScreenShell>
+      <AppHeader title="Preparar conteúdo" onBack={requestBack} />
+      <StepTabs step={step} onChange={setStep} disabled={syncing || recording} />
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.body}>
+        {step === 1 ? (
+          <View style={styles.block}>
+            <Text style={styles.label}>Título</Text>
+            <TextInput value={title} onChangeText={setTitle} style={styles.input} accessibilityLabel="Título" />
+            <Text style={styles.label}>Texto para os alunos</Text>
+            <TextInput
+              value={text}
+              onChangeText={setText}
+              style={[styles.input, styles.multiline]}
+              multiline
+              accessibilityLabel="Texto para os alunos"
             />
-          </View>
-          <View style={styles.flex}>
-            <Button label="Importar áudio" onPress={importAudio} disabled={recording} variant="secondary" />
-          </View>
-        </View>
-        <View style={styles.row}>
-          <View style={styles.flex}>
-            <Button label={playing ? 'Pausar' : 'Reproduzir'} onPress={togglePlayback} disabled={!hasAudio} variant="secondary" />
-          </View>
-          <View style={styles.flex}>
-            <Button
-              label="Recomeçar"
-              onPress={restartPlayback}
-              disabled={!hasAudio}
-              variant="secondary"
-            />
-          </View>
-        </View>
-        <Button
-          label={syncing ? 'A sincronizar…' : 'Sincronizar automaticamente'}
-          onPress={synchronize}
-          disabled={syncing || recording || !text.trim() || !hasAudio}
-        />
-        <Button label="Importar exercício .lsb" onPress={importLsb} variant="secondary" />
-        {message ? <Text style={styles.ok}>{message}</Text> : null}
-        {error ? <Text style={styles.err}>{error}</Text> : null}
-        {words.length > 0 ? (
-          <View style={styles.words}>
-            <Text style={styles.section}>Palavras alinhadas</Text>
-            {words.map(word => (
-              <Text key={word.id || `${word.index}-${word.startChar}`} style={styles.word}>
-                {word.text}{' '}
-                {word.startMs != null ? `${word.startMs}–${word.endMs} ms` : 'sem tempo'}
-                {requiresReview(word) ? ' · rever' : ''}
-              </Text>
-            ))}
+            <Button label="Continuar para a narração" onPress={() => setStep(2)} disabled={!text.trim()} />
           </View>
         ) : null}
-        <Button label="Guardar" onPress={() => save()} />
+        {step === 2 ? (
+          <View style={layout.isTablet && layout.isLandscape ? styles.split : styles.block}>
+            <View style={styles.flex}>
+              <RecordingMeter recording={recording} hasAudio={hasAudio} durationMs={durationMs} />
+            </View>
+            <View style={styles.flex}>
+              <Button
+                label={recording ? 'Parar gravação' : 'Gravar'}
+                onPress={toggleRecord}
+                variant={recording ? 'danger' : 'primary'}
+                accessibilityLabel={recording ? 'Parar gravação' : 'Começar a gravar a narração'}
+              />
+              <View style={styles.gap} />
+              <Button label="Importar áudio" onPress={importAudio} disabled={recording} variant="secondary" />
+              {hasAudio ? (
+                <>
+                  <View style={styles.gap} />
+                  <Button
+                    label={playing ? 'Parar' : 'Reproduzir'}
+                    onPress={togglePlayback}
+                    variant="secondary"
+                  />
+                  <View style={styles.gap} />
+                  <Button label="Ouvir novamente" onPress={restartPlayback} variant="secondary" />
+                  <View style={styles.gap} />
+                  <Button
+                    label="Regravar"
+                    onPress={toggleRecord}
+                    variant="ghost"
+                    disabled={recording}
+                    accessibilityLabel="Substituir a narração com uma gravação nova"
+                  />
+                </>
+              ) : null}
+              <View style={styles.gap} />
+              <Button label="Continuar" onPress={() => setStep(3)} disabled={!hasAudio || recording} />
+            </View>
+          </View>
+        ) : null}
+        {step === 3 ? (
+          <View style={styles.block}>
+            <Button
+              label={syncing ? 'A sincronizar…' : 'Sincronizar automaticamente'}
+              onPress={synchronize}
+              disabled={syncing || recording || !text.trim() || !hasAudio}
+            />
+            {syncing ? (
+              <View style={styles.syncing} accessibilityLiveRegion="polite">
+                <ActivityIndicator size="large" color={colors.primary} />
+                <Text style={styles.hint}>A sincronizar neste tablet, sem internet. Pode demorar alguns minutos. Não feche a aplicação.</Text>
+              </View>
+            ) : null}
+            {message ? <Text style={styles.ok}>{message}</Text> : null}
+            {error && step === 3 ? <Text style={styles.err}>{error}</Text> : null}
+            {words.length > 0 ? (
+              <View style={styles.words}>
+                <Text style={styles.section}>Resultado</Text>
+                <Text style={styles.hint}>
+                  {words.filter(requiresReview).length} palavras para rever · {words.filter(word => word.startMs != null).length} com tempo
+                </Text>
+                {words.map((word, index) => (
+                  <WordTimeRow
+                    key={word.id || `${word.index}-${word.startChar}`}
+                    word={word}
+                    onApply={(startMs, endMs) => {
+                      setWords(previous =>
+                        previous.map((item, itemIndex) =>
+                          itemIndex === index
+                            ? {
+                                ...item,
+                                startMs,
+                                endMs,
+                                manuallyAdjusted: true,
+                                needsReview: false,
+                                state: 'MANUAL',
+                                timestampOrigin: 'MANUAL',
+                              }
+                            : item,
+                        ),
+                      );
+                    }}
+                  />
+                ))}
+                <Button label={playing ? 'Pausar narração' : 'Ouvir narração'} onPress={togglePlayback} variant="secondary" />
+              </View>
+            ) : null}
+            <Button
+              label="Continuar para guardar"
+              onPress={() => setStep(4)}
+              disabled={syncing || words.length === 0}
+            />
+          </View>
+        ) : null}
+        {step === 4 ? (
+          <View style={styles.block}>
+            <Text style={styles.hint}>
+              O rascunho fica só no Modo Professor. Disponibilizar para leitura exige texto, narração e
+              sincronização concluída.
+            </Text>
+            <Text style={styles.meta}>
+              {isReadyForStudent({ ...draft, availableToStudents: availableToStudents ?? false })
+                ? 'Estado: visível no Modo Aluno'
+                : 'Estado: rascunho'}
+            </Text>
+            <Button label="Guardar rascunho" onPress={saveDraft} variant="secondary" />
+            <View style={styles.gap} />
+            <Button
+              label="Disponibilizar para leitura"
+              onPress={publish}
+              disabled={!canPublish}
+              accessibilityLabel="Disponibilizar para leitura no modo aluno"
+            />
+            {!canPublish ? (
+              <Text style={styles.hint}>
+                {pendingReview > 0
+                  ? `Há ${pendingReview} palavras para rever na etapa 3. Só depois o conteúdo pode ir para o Modo Aluno.`
+                  : 'Ainda faltam a narração ou a sincronização concluída sem palavras por rever.'}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
+        {error && step !== 3 ? <Text style={styles.err}>{error}</Text> : null}
+        {message && step !== 3 ? <Text style={styles.ok}>{message}</Text> : null}
       </ScrollView>
-    </SafeAreaView>
+    </ScreenShell>
+  );
+}
+
+function WordTimeRow({
+  word,
+  onApply,
+}: {
+  word: WordTiming;
+  onApply: (startMs: number, endMs: number) => void;
+}) {
+  const [start, setStart] = useState(word.startMs != null ? String(word.startMs) : '');
+  const [end, setEnd] = useState(word.endMs != null ? String(word.endMs) : '');
+  const review = requiresReview(word);
+  return (
+    <View style={styles.wordRow}>
+      <Text style={[styles.word, review ? styles.wordReview : null]}>
+        {word.text}
+        {review ? ' — rever' : word.manuallyAdjusted ? ' — corrigido' : ''}
+      </Text>
+      <View style={styles.timeFields}>
+        <TextInput
+          value={start}
+          onChangeText={setStart}
+          keyboardType="number-pad"
+          style={styles.timeInput}
+          accessibilityLabel={`Início de ${word.text} em milissegundos`}
+        />
+        <TextInput
+          value={end}
+          onChangeText={setEnd}
+          keyboardType="number-pad"
+          style={styles.timeInput}
+          accessibilityLabel={`Fim de ${word.text} em milissegundos`}
+        />
+        <Button
+          label="Aplicar"
+          variant="secondary"
+          onPress={() => {
+            const startMs = Number.parseInt(start, 10);
+            const endMs = Number.parseInt(end, 10);
+            if (Number.isNaN(startMs) || Number.isNaN(endMs) || endMs < startMs) {
+              return;
+            }
+            onApply(startMs, endMs);
+          }}
+          accessibilityLabel={`Aplicar tempos de ${word.text}`}
+        />
+      </View>
+    </View>
+  );
+}
+
+function StepTabs({
+  step,
+  onChange,
+  disabled,
+}: {
+  step: Step;
+  onChange: (step: Step) => void;
+  disabled?: boolean;
+}) {
+  const items: { id: Step; label: string }[] = [
+    { id: 1, label: 'Texto' },
+    { id: 2, label: 'Narração' },
+    { id: 3, label: 'Sincronizar' },
+    { id: 4, label: 'Guardar' },
+  ];
+  return (
+    <View style={styles.tabs} accessibilityRole="tablist">
+      {items.map(item => {
+        const active = step === item.id;
+        return (
+          <Pressable
+            key={item.id}
+            onPress={() => {
+              if (!disabled) {
+                onChange(item.id);
+              }
+            }}
+            disabled={disabled}
+            style={[styles.step, active ? styles.stepActive : null, disabled ? styles.stepDisabled : null]}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: active }}
+            accessibilityLabel={`Etapa ${item.id}, ${item.label}${active ? ', actual' : ''}`}>
+            <Text style={[styles.stepIndex, active ? styles.stepIndexActive : null]}>{item.id}</Text>
+            <Text numberOfLines={1} style={[styles.stepLabel, active ? styles.stepLabelActive : null]}>
+              {item.label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
   );
 }
 
@@ -324,23 +622,75 @@ function messageOf(error: unknown): string {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
-  body: { padding: 16, gap: 12, paddingBottom: 48 },
-  title: { fontSize: 24, fontWeight: '700', color: colors.text },
-  label: { color: colors.muted, fontWeight: '600' },
+  body: { paddingBottom: 40, gap: 12 },
+  block: { gap: 12 },
+  split: { flexDirection: 'row', gap: 16, alignItems: 'flex-start' },
+  flex: { flex: 1, gap: 10, minWidth: 0 },
+  label: { color: colors.muted, fontWeight: '700' },
   input: {
     backgroundColor: colors.surface,
-    borderRadius: 10,
+    borderRadius: radii.sm,
     padding: 12,
     fontSize: 18,
     color: colors.text,
+    minHeight: 48,
   },
-  multiline: { minHeight: 140, textAlignVertical: 'top' },
-  section: { fontSize: 20, fontWeight: '700', color: colors.text, marginTop: 8 },
-  row: { flexDirection: 'row', gap: 12 },
-  flex: { flex: 1 },
+  multiline: { minHeight: 180, textAlignVertical: 'top' },
+  section: { fontSize: 20, fontWeight: '700', color: colors.text },
+  hint: { fontSize: 16, lineHeight: 24, color: colors.muted },
+  meta: { fontSize: 16, fontWeight: '700', color: colors.text },
   ok: { color: colors.primary, fontSize: 16 },
   err: { color: colors.danger, fontSize: 16 },
-  words: { gap: 4 },
-  word: { fontSize: 16, color: colors.text },
+  words: { gap: 8 },
+  word: { fontSize: 16, color: colors.text, fontWeight: '700' },
+  wordReview: { color: colors.danger },
+  wordRow: { gap: 6, paddingVertical: 6, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.secondary },
+  timeFields: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' },
+  timeInput: {
+    minHeight: 48,
+    minWidth: 88,
+    backgroundColor: colors.surface,
+    borderRadius: radii.sm,
+    paddingHorizontal: 10,
+    fontSize: 16,
+    color: colors.text,
+  },
+  gap: { height: 10 },
+  tabs: {
+    flexDirection: 'row',
+    gap: 4,
+    marginBottom: 12,
+  },
+  step: {
+    flex: 1,
+    minHeight: 48,
+    minWidth: 0,
+    borderRadius: 12,
+    backgroundColor: colors.secondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 2,
+  },
+  stepActive: {
+    backgroundColor: colors.primary,
+  },
+  stepDisabled: { opacity: 0.55 },
+  syncing: { gap: 12, alignItems: 'center', paddingVertical: 12 },
+  stepIndex: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: colors.primaryDeep,
+  },
+  stepIndexActive: {
+    color: colors.primaryText,
+  },
+  stepLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.primaryDeep,
+  },
+  stepLabelActive: {
+    color: colors.primaryText,
+  },
 });

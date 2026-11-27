@@ -48,4 +48,55 @@ describe('ContentRepository', () => {
     expect(ready).toHaveLength(1);
     expect(ready[0].words).toHaveLength(2);
   });
+
+  it('keeps drafts out of the student library', async () => {
+    const repo = new ContentRepository(createMemoryBackend());
+    await repo.save({
+      id: 'draft',
+      title: 'Rascunho',
+      text: 'Olá',
+      audioRelativePath: 'audio.wav',
+      durationMs: 100,
+      words: [],
+      syncStatus: 'NONE',
+      createdAtEpochMs: 1,
+      updatedAtEpochMs: 1,
+      availableToStudents: false,
+    });
+    expect(await repo.listReadyForStudent()).toHaveLength(0);
+  });
+
+  it('hides synchronized content when the teacher kept it as a draft', async () => {
+    const repo = new ContentRepository(createMemoryBackend());
+    await repo.save({
+      id: 'hidden',
+      title: 'Não publicado',
+      text: 'Olá',
+      audioRelativePath: 'audio.wav',
+      durationMs: 100,
+      words: [],
+      syncStatus: 'COMPLETED',
+      createdAtEpochMs: 1,
+      updatedAtEpochMs: 1,
+      availableToStudents: false,
+    });
+    expect(await repo.listReadyForStudent()).toHaveLength(0);
+  });
+
+  it('keeps exercises with words still to review out of the student library', async () => {
+    const repo = new ContentRepository(createMemoryBackend());
+    await repo.save({
+      id: 'gaps',
+      title: 'Por rever',
+      text: 'Olá',
+      audioRelativePath: 'audio.wav',
+      durationMs: 100,
+      words: [],
+      syncStatus: 'COMPLETED_WITH_GAPS',
+      createdAtEpochMs: 1,
+      updatedAtEpochMs: 1,
+      availableToStudents: true,
+    });
+    expect(await repo.listReadyForStudent()).toHaveLength(0);
+  });
 });

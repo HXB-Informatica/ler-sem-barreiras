@@ -37,16 +37,19 @@ def fetchEbranchCtc = tasks.register("fetchEbranchCtc") {
 }
 tasks.matching { it.name == "preBuild" }.configureEach { dependsOn(fetchEbranchCtc) }
 
-def ctcAssets = file("src/main/assets/ctc")
+def generatedCtcAssets = file("$buildDir/generated/ctcAssets")
 def stageEbranchCtcAssets = tasks.register("stageEbranchCtcAssets", Copy) {
     dependsOn(fetchEbranchCtc)
     from(ctcDir) {
         include("model.onnx")
         include("model.int8.onnx.data")
     }
-    into(ctcAssets)
+    into(new File(generatedCtcAssets, "ctc"))
 }
 tasks.matching { it.name.startsWith("merge") && it.name.endsWith("Assets") }.configureEach {
+    dependsOn(stageEbranchCtcAssets)
+}
+tasks.matching { it.name.toLowerCase().contains("lint") }.configureEach {
     dependsOn(stageEbranchCtcAssets)
 }
 
@@ -130,19 +133,30 @@ android {
         applicationId "pt.lersembarreiras.mobile"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "0.2.0"
+        versionCode 4
+        versionName "0.2.3-experimental"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         ndk {
             abiFilters "arm64-v8a", "x86_64"
+        }
+    }
+    sourceSets {
+        main {
+            assets.srcDirs += [generatedCtcAssets]
         }
     }
     packaging {
         jniLibs {
             pickFirsts += ["**/libc++_shared.so"]
+            excludes += ["**/armeabi-v7a/**", "**/x86/**"]
         }
     }
     androidResources {
         noCompress += ["onnx", "data", "bin"]
+    }
+    lint {
+        checkReleaseBuilds true
+        abortOnError true
     }
     signingConfigs {
         debug {
@@ -176,4 +190,6 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test:runner:1.6.2")
 }

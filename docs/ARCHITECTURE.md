@@ -2,7 +2,11 @@
 
 O Ler sem Barreiras é uma aplicação **offline, sem servidor**. Não há envio de gravações para a Internet.
 
-**A partir da v0.2.0** a app móvel está em [`mobile/`](../mobile) (**React Native**, TypeScript). A descrição dos módulos Gradle abaixo documenta a **linha 0.1.x (Kotlin)**, ainda presente como referência e Studio Windows. Decisão: [adr/0001-migrar-para-react-native.md](adr/0001-migrar-para-react-native.md).
+**A partir da v0.2.0** a app móvel está em [`mobile/`](../mobile) (**React Native**, TypeScript). O APK a distribuir é o de `mobile/android` (`applicationId` `pt.lersembarreiras.mobile`). O módulo Gradle `:app` (`pt.lersembarreiras.app`) é a linha **0.1.x Kotlin/Compose**, referência histórica — não é o pacote da 0.2.
+
+A 0.2 guarda `filesDir/lsb/contents/<id>/content.json` + `audio.wav`. A 0.1 usa Room (`ler-sem-barreiras.db`) **e** o mesmo `content.json`. São aplicações Android distintas: conteúdos da 0.1 não aparecem sozinhos na 0.2; a ponte é o pacote `.lsb` (formato inalterado).
+
+A descrição dos módulos Gradle abaixo documenta a linha 0.1.x, ainda presente como referência e Studio Windows. Decisão: [adr/0001-migrar-para-react-native.md](adr/0001-migrar-para-react-native.md).
 
 Na 0.1, a app Android corre no tablet; o **Studio Windows** (`:studio`) prepara narrações com microfone USB.
 

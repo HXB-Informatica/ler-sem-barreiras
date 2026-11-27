@@ -1,19 +1,24 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { ReadingContent } from '../core/models';
 import type { ContentRepository } from '../storage/contentRepository';
-import { colors } from '../theme';
-import { Button } from '../ui/Button';
+import { AppHeader } from '../ui/AppHeader';
+import { BrandMark } from '../ui/BrandMark';
+import { ContentCard } from '../ui/ContentCard';
+import { EmptyState } from '../ui/EmptyState';
+import { useLayout } from '../ui/layout';
+import { ScreenShell } from '../ui/ScreenShell';
 
 type Props = {
   repository: ContentRepository;
   onBack: () => void;
   onOpen: (id: string) => void;
+  onAbout: () => void;
 };
 
-export function ReaderListScreen({ repository, onBack, onOpen }: Props) {
+export function ReaderListScreen({ repository, onBack, onOpen, onAbout }: Props) {
   const [contents, setContents] = useState<ReadingContent[]>([]);
+  const layout = useLayout();
 
   const reload = useCallback(async () => {
     setContents(await repository.listReadyForStudent());
@@ -24,47 +29,36 @@ export function ReaderListScreen({ repository, onBack, onOpen }: Props) {
   }, [reload]);
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <Button label="Voltar" onPress={onBack} variant="secondary" />
-        <Text style={styles.title}>Modo Aluno</Text>
-      </View>
+    <ScreenShell>
+      <AppHeader title="Modo Aluno" onBack={onBack} onAbout={onAbout} />
       {contents.length === 0 ? (
-        <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>Ainda não há textos prontos a ler.</Text>
-          <Text style={styles.lead}>
-            Peça a um professor para criar um conteúdo e sincronizar a narração neste tablet, ou
-            importar um exercício .lsb.
-          </Text>
-        </View>
+        <EmptyState
+          illustration={<BrandMark size={88} />}
+          title="Ainda não há histórias disponíveis."
+          message="Pede ajuda ao teu professor para começares a ler."
+        />
       ) : (
         <ScrollView contentContainerStyle={styles.list}>
-          {contents.map(item => (
-            <Pressable
-              key={item.id}
-              onPress={() => onOpen(item.id)}
-              accessibilityRole="button"
-              accessibilityLabel={`Abrir ${item.title}`}
-              style={styles.card}>
-              <Text style={styles.cardTitle}>{item.title}</Text>
-              <Text style={styles.meta}>{item.words.length} palavras</Text>
-            </Pressable>
-          ))}
+          <View style={layout.columns > 1 ? styles.grid : undefined}>
+            {contents.map(item => (
+              <View key={item.id} style={layout.columns > 1 ? styles.cell : undefined}>
+                <ContentCard
+                  title={item.title}
+                  subtitle="Toca para ouvir e ler"
+                  accessibilityLabel={`Abrir ${item.title}`}
+                  onPress={() => onOpen(item.id)}
+                />
+              </View>
+            ))}
+          </View>
         </ScrollView>
       )}
-    </SafeAreaView>
+    </ScreenShell>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
-  header: { padding: 16, gap: 12 },
-  title: { fontSize: 24, fontWeight: '700', color: colors.text },
-  empty: { flex: 1, justifyContent: 'center', padding: 24, gap: 12 },
-  emptyTitle: { fontSize: 22, fontWeight: '700', textAlign: 'center', color: colors.text },
-  lead: { fontSize: 16, textAlign: 'center', color: colors.muted },
-  list: { padding: 16, gap: 12 },
-  card: { backgroundColor: colors.surface, borderRadius: 12, padding: 20 },
-  cardTitle: { fontSize: 22, fontWeight: '700', color: colors.text },
-  meta: { marginTop: 6, color: colors.muted, fontSize: 16 },
+  list: { paddingBottom: 32, gap: 12 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  cell: { flexGrow: 1, flexBasis: '47%' },
 });

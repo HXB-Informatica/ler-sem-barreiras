@@ -3,13 +3,15 @@ import { Animated, DeviceEventEmitter, StyleSheet, Text, View } from 'react-nati
 import { audioBridge } from '../native/bridge';
 import { colors } from '../theme';
 
-const BAR_COUNT = 40;
+const BAR_COUNT = 36;
 
 type Props = {
   recording: boolean;
+  hasAudio?: boolean;
+  durationMs?: number;
 };
 
-export function RecordingMeter({ recording }: Props) {
+export function RecordingMeter({ recording, hasAudio = false, durationMs = 0 }: Props) {
   const [bars, setBars] = useState<number[]>(() => Array.from({ length: BAR_COUNT }, () => 0.12));
   const [elapsedMs, setElapsedMs] = useState(0);
   const startedAt = useRef(Date.now());
@@ -17,20 +19,22 @@ export function RecordingMeter({ recording }: Props) {
 
   useEffect(() => {
     if (!recording) {
-      setElapsedMs(0);
+      setElapsedMs(hasAudio ? durationMs : 0);
       setBars(Array.from({ length: BAR_COUNT }, () => 0.12));
       return;
     }
     startedAt.current = Date.now();
     const pushLevel = (rms: number, peak: number, nativeElapsed?: number) => {
-      // O emulador entrega o HyperX muito baixo (~5 % da escala). Sem este ganho as barras ficam paradas.
       const amplitude = Math.min(1, Math.max(peak * 14, rms * 36, 0.08));
       setElapsedMs(nativeElapsed && nativeElapsed > 0 ? nativeElapsed : Date.now() - startedAt.current);
       setBars(previous => [...previous.slice(1), amplitude]);
     };
-    const subscription = DeviceEventEmitter.addListener('LsbAudioLevel', (event: { rms?: number; peak?: number; elapsedMs?: number }) => {
-      pushLevel(event.rms ?? 0, event.peak ?? 0, event.elapsedMs);
-    });
+    const subscription = DeviceEventEmitter.addListener(
+      'LsbAudioLevel',
+      (event: { rms?: number; peak?: number; elapsedMs?: number }) => {
+        pushLevel(event.rms ?? 0, event.peak ?? 0, event.elapsedMs);
+      },
+    );
     const poll = setInterval(() => {
       setElapsedMs(Date.now() - startedAt.current);
       audioBridge
@@ -42,7 +46,7 @@ export function RecordingMeter({ recording }: Props) {
       subscription.remove();
       clearInterval(poll);
     };
-  }, [recording]);
+  }, [recording, hasAudio, durationMs]);
 
   useEffect(() => {
     if (!recording) {
@@ -60,40 +64,42 @@ export function RecordingMeter({ recording }: Props) {
     return () => loop.stop();
   }, [recording, pulse]);
 
+  const status = recording ? 'A gravar' : hasAudio ? 'Narração pronta' : 'Pronto a gravar';
+  const clock = formatClock(recording ? elapsedMs : durationMs);
+
   return (
     <View
       style={[styles.card, recording ? styles.cardLive : styles.cardIdle]}
       accessibilityLiveRegion="polite"
-      accessibilityLabel={
-        recording ? `A gravar a narração, ${formatClock(elapsedMs)}` : 'O microfone ainda não está a gravar'
-      }>
+      accessibilityLabel={`${status}, ${clock}`}>
       <View style={styles.header}>
-        <Animated.View style={[styles.dot, { opacity: pulse }]} />
-        <Text style={[styles.status, recording ? styles.statusLive : styles.statusIdle]}>
-          {recording ? 'A GRAVAR' : 'Pronto a gravar'}
+        <Animated.View style={[styles.mic, recording ? styles.micLive : null, { opacity: recording ? pulse : 1 }]}>
+          <Text style={styles.micText}>●</Text>
+        </Animated.View>
+        <Text style={[styles.status, recording ? styles.statusLive : styles.statusIdle]}>{status}</Text>
+        <Text style={styles.clock}>{clock}</Text>
+      </View>
+      {recording ? (
+        <View style={styles.wave} accessibilityLabel="Nível do microfone">
+          {bars.map((value, index) => (
+            <View
+              key={index}
+              style={[
+                styles.bar,
+                {
+                  height: 10 + value * 78,
+                  backgroundColor: colors.danger,
+                  opacity: 0.45 + value * 0.55,
+                },
+              ]}
+            />
+          ))}
+        </View>
+      ) : (
+        <Text style={styles.hint}>
+          {hasAudio ? 'Pode ouvir, regravar ou continuar.' : 'Grave a narração ou importe um ficheiro de áudio.'}
         </Text>
-        <Text style={styles.clock}>{formatClock(elapsedMs)}</Text>
-      </View>
-      <View style={styles.wave}>
-        {bars.map((value, index) => (
-          <View
-            key={index}
-            style={[
-              styles.bar,
-              {
-                height: 10 + value * 78,
-                backgroundColor: recording ? colors.danger : colors.primary,
-                opacity: recording ? 0.45 + value * 0.55 : 0.28,
-              },
-            ]}
-          />
-        ))}
-      </View>
-      <Text style={styles.hint}>
-        {recording
-          ? 'Fale agora. O ponto vermelho pisca e as barras sobem com a sua voz.'
-          : 'Toque em Gravar: aparece «A GRAVAR», o tempo e um gráfico do microfone.'}
-      </Text>
+      )}
     </View>
   );
 }
@@ -113,7 +119,7 @@ const styles = StyleSheet.create({
     padding: 14,
     gap: 10,
     borderWidth: 2,
-    minHeight: 170,
+    minHeight: 140,
   },
   cardLive: {
     backgroundColor: '#FDECEC',
@@ -128,17 +134,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
   },
-  dot: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+  mic: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: colors.secondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  micLive: {
     backgroundColor: colors.danger,
   },
+  micText: { color: colors.primaryText, fontWeight: '800' },
   status: {
     flex: 1,
     fontSize: 20,
     fontWeight: '800',
-    letterSpacing: 0.6,
   },
   statusLive: { color: colors.danger },
   statusIdle: { color: colors.muted },
@@ -160,7 +171,8 @@ const styles = StyleSheet.create({
     minHeight: 8,
   },
   hint: {
-    fontSize: 15,
+    fontSize: 16,
     color: colors.muted,
+    lineHeight: 24,
   },
 });

@@ -195,6 +195,7 @@ export function bundleToContent(bundle: LsbBundle, assignedId: string, audioRela
     syncStatus: bundle.metadata.syncStatus,
     createdAtEpochMs: bundle.metadata.createdAtEpochMs,
     updatedAtEpochMs: bundle.metadata.updatedAtEpochMs,
+    availableToStudents: bundle.metadata.syncStatus === 'COMPLETED',
   };
 }
 

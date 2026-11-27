@@ -6,7 +6,7 @@ import {
   parseLsbFiles,
   type LsbFileMap,
 } from '../core/lsb';
-import type { ReadingContent } from '../core/models';
+import { isReadyForStudent, type ReadingContent } from '../core/models';
 import { decodeContent, encodeContent, fromPackage } from '../core/packageFormat';
 import { bytesFromBase64, bytesToBase64 } from '../core/sha256';
 import { randomUuid } from '../core/uuid';
@@ -43,12 +43,7 @@ export class ContentRepository {
 
   async listReadyForStudent(): Promise<ReadingContent[]> {
     const all = await this.list();
-    return all.filter(
-      item =>
-        item.audioRelativePath != null ||
-        item.syncStatus === 'COMPLETED' ||
-        item.syncStatus === 'COMPLETED_WITH_GAPS',
-    );
+    return all.filter(isReadyForStudent);
   }
 
   async get(id: string): Promise<ReadingContent | null> {

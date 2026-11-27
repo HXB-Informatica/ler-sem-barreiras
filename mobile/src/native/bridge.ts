@@ -29,6 +29,7 @@ type LsbAudioNative = {
 
 type LsbSpeechNative = {
   isAvailable: () => Promise<boolean>;
+  warmup?: () => Promise<boolean>;
   transcribe: (
     path: string,
     prompt: string,
@@ -109,6 +110,17 @@ export const audioBridge = {
   status: () => requireAudio().status(),
   getLevel: () => requireAudio().getLevel(),
 };
+
+export async function warmupSpeech(): Promise<boolean> {
+  if (!speechNative?.warmup) {
+    return false;
+  }
+  try {
+    return await speechNative.warmup();
+  } catch {
+    return false;
+  }
+}
 
 export async function transcribeLocal(path: string, prompt = ''): Promise<Transcription> {
   if (!speechNative) {

@@ -68,6 +68,7 @@ fun TeacherListScreen(
     onBack: () -> Unit,
     onCreate: () -> Unit,
     onOpen: (String) -> Unit,
+    onAbout: () -> Unit = {},
     pendingImportUri: android.net.Uri? = null,
     onPendingImportConsumed: () -> Unit = {},
 ) {
@@ -94,6 +95,10 @@ fun TeacherListScreen(
                     }
                 },
                 actions = {
+                    TextButton(
+                        onClick = onAbout,
+                        modifier = Modifier.semantics { contentDescription = "Sobre o projeto" },
+                    ) { Text("Sobre o projeto") }
                     TextButton(
                         onClick = { importLsb.launch(arrayOf("application/zip", "application/octet-stream", "*/*")) },
                         modifier = Modifier.semantics { contentDescription = "Importar exercício .lsb" },
@@ -158,7 +163,11 @@ private fun ContentCard(item: ReadingContent, onOpen: () -> Unit, onDelete: () -
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(item.title, style = MaterialTheme.typography.titleLarge)
-                Text(syncLabel(item.syncStatus), style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    syncLabel(item.syncStatus),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.semantics { contentDescription = "Estado: ${syncLabel(item.syncStatus)}" },
+                )
                 Text(date, style = MaterialTheme.typography.bodySmall)
             }
             IconButton(onClick = onDelete, modifier = Modifier.semantics { contentDescription = "Eliminar ${item.title}" }) {

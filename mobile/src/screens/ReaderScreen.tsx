@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { memo, useEffect, useRef, useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Switch, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { PresentationMode, ReadingContent } from '../core/models';
 import { currentWordIndex } from '../core/timeValidator';
 import { audioBridge } from '../native/bridge';
 import type { ContentRepository } from '../storage/contentRepository';
 import { colors } from '../theme';
+import { AppHeader } from '../ui/AppHeader';
 import { Button } from '../ui/Button';
 
 type Props = {
@@ -22,8 +23,14 @@ export function ReaderScreen({ repository, contentId, onBack }: Props) {
   const [fontIndex, setFontIndex] = useState(1);
   const [highContrast, setHighContrast] = useState(false);
   const [playing, setPlaying] = useState(false);
-  const [positionMs, setPositionMs] = useState(0);
+  const [wordIndex, setWordIndex] = useState(-1);
   const [missingAudio, setMissingAudio] = useState(false);
+  const contentRef = useRef(content);
+  contentRef.current = content;
+  const wordIndexRef = useRef(-1);
+  const { width, height } = useWindowDimensions();
+  const isTablet = Math.min(width, height) >= 600;
+  const landscape = width > height;
 
   useEffect(() => {
     repository.get(contentId).then(item => {
@@ -44,7 +51,12 @@ export function ReaderScreen({ repository, contentId, onBack }: Props) {
     }
     const timer = setInterval(() => {
       audioBridge.status().then(status => {
-        setPositionMs(status.positionMs);
+        const item = contentRef.current;
+        const next = item ? currentWordIndex(item.words, status.positionMs) : -1;
+        if (next !== wordIndexRef.current) {
+          wordIndexRef.current = next;
+          setWordIndex(next);
+        }
         if (!status.playing) {
           setPlaying(false);
         }
@@ -53,15 +65,10 @@ export function ReaderScreen({ repository, contentId, onBack }: Props) {
     return () => clearInterval(timer);
   }, [playing]);
 
-  const wordIndex = useMemo(
-    () => (content ? currentWordIndex(content.words, positionMs) : -1),
-    [content, positionMs],
-  );
-
   const foreground = highContrast ? colors.contrastFg : colors.text;
   const background = highContrast ? colors.contrastBg : colors.background;
-  const highlight = highContrast ? colors.contrastHighlight : colors.highlight;
-  const fontSize = 22 * FONT_STEPS[fontIndex];
+  const highlight = highContrast ? colors.contrastHighlight : colors.yellow;
+  const fontSize = 24 * FONT_STEPS[fontIndex];
 
   const play = async () => {
     if (!content?.audioRelativePath) {
@@ -88,17 +95,22 @@ export function ReaderScreen({ repository, contentId, onBack }: Props) {
     }
     await audioBridge.seek(0);
     await audioBridge.play(content.audioRelativePath);
-    setPositionMs(0);
+    wordIndexRef.current = 0;
+    setWordIndex(0);
     setPlaying(true);
   };
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: background }]}>
-      <View style={styles.header}>
-        <Button label="Voltar" onPress={onBack} variant="secondary" />
-        <Text style={[styles.title, { color: foreground }]}>{content?.title ?? 'Leitura'}</Text>
+      <View style={styles.pad}>
+        <AppHeader title={content?.title ?? 'Leitura'} onBack={onBack} />
       </View>
-      <ScrollView contentContainerStyle={styles.surface}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.surface,
+          { paddingHorizontal: isTablet ? 40 : 20, maxWidth: landscape && isTablet ? 980 : undefined, alignSelf: 'center', width: '100%' },
+        ]}
+        accessibilityLiveRegion="polite">
         {content ? (
           <ReadingSurface
             content={content}
@@ -112,14 +124,36 @@ export function ReaderScreen({ repository, contentId, onBack }: Props) {
           <Text style={{ color: foreground }}>A carregar…</Text>
         )}
       </ScrollView>
-      <View style={styles.controls}>
+      <View style={[styles.controls, { maxWidth: isTablet ? 720 : undefined, alignSelf: 'center', width: '100%' }]}>
         <View style={styles.row}>
-          <ModeChip label="Texto" active={mode === 'FULL_TEXT'} onPress={() => setMode('FULL_TEXT')} />
-          <ModeChip label="Palavra" active={mode === 'SINGLE_WORD'} onPress={() => setMode('SINGLE_WORD')} />
-          <ModeChip label="Progressiva" active={mode === 'PROGRESSIVE'} onPress={() => setMode('PROGRESSIVE')} />
+          <ModeChip
+            label="Texto"
+            active={mode === 'FULL_TEXT'}
+            onPress={() => setMode('FULL_TEXT')}
+            accessibilityLabel="Modo texto completo"
+          />
+          <ModeChip
+            label="Palavra"
+            active={mode === 'SINGLE_WORD'}
+            onPress={() => setMode('SINGLE_WORD')}
+            accessibilityLabel="Modo uma palavra de cada vez"
+          />
+          <ModeChip
+            label="Progressiva"
+            active={mode === 'PROGRESSIVE'}
+            onPress={() => setMode('PROGRESSIVE')}
+            accessibilityLabel="Modo leitura progressiva"
+          />
         </View>
         <View style={styles.row}>
-          <Button label="Letra" onPress={() => setFontIndex(index => (index + 1) % FONT_STEPS.length)} variant="secondary" />
+          <View style={styles.flex}>
+            <Button
+              label="Letra"
+              onPress={() => setFontIndex(index => (index + 1) % FONT_STEPS.length)}
+              variant="secondary"
+              accessibilityLabel={`Aumentar letras. Tamanho ${fontIndex + 1} de ${FONT_STEPS.length}`}
+            />
+          </View>
           <View style={styles.contrast}>
             <Text style={{ color: foreground, marginRight: 8 }}>Contraste</Text>
             <Switch
@@ -134,10 +168,21 @@ export function ReaderScreen({ repository, contentId, onBack }: Props) {
         ) : null}
         <View style={styles.row}>
           <View style={styles.flex}>
-            <Button label={playing ? 'Pausar' : 'Ouvir'} onPress={playing ? pause : play} disabled={missingAudio} />
+            <Button
+              label={playing ? 'Pausar' : 'Ouvir'}
+              onPress={playing ? pause : play}
+              disabled={missingAudio}
+              accessibilityLabel={playing ? 'Pausar a narração' : 'Ouvir a narração'}
+            />
           </View>
           <View style={styles.flex}>
-            <Button label="Recomeçar" onPress={restart} disabled={missingAudio} variant="secondary" />
+            <Button
+              label="Recomeçar"
+              onPress={restart}
+              disabled={missingAudio}
+              variant="secondary"
+              accessibilityLabel="Recomeçar a narração do início"
+            />
           </View>
         </View>
       </View>
@@ -145,15 +190,30 @@ export function ReaderScreen({ repository, contentId, onBack }: Props) {
   );
 }
 
-function ModeChip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+function ModeChip({
+  label,
+  active,
+  onPress,
+  accessibilityLabel,
+}: {
+  label: string;
+  active: boolean;
+  onPress: () => void;
+  accessibilityLabel: string;
+}) {
   return (
     <View style={styles.flex}>
-      <Button label={label} onPress={onPress} variant={active ? 'primary' : 'secondary'} />
+      <Button
+        label={label}
+        onPress={onPress}
+        variant={active ? 'primary' : 'secondary'}
+        accessibilityLabel={`${accessibilityLabel}${active ? ', seleccionado' : ''}`}
+      />
     </View>
   );
 }
 
-function ReadingSurface({
+const ReadingSurface = memo(function ReadingSurface({
   content,
   mode,
   currentIndex,
@@ -171,26 +231,48 @@ function ReadingSurface({
   const words = content.words;
   if (words.length === 0) {
     return (
-      <Text style={{ color: foreground, fontSize, lineHeight: fontSize * 1.45 }}>{content.text}</Text>
+      <Text style={{ color: foreground, fontSize, lineHeight: fontSize * 1.5, textAlign: 'center' }}>
+        {content.text}
+      </Text>
     );
   }
   if (mode === 'SINGLE_WORD') {
     const word = words[Math.max(0, currentIndex)]?.text ?? content.text;
     return (
-      <Text style={{ color: foreground, fontSize: fontSize + 8, fontWeight: '700', textAlign: 'center' }}>
+      <Text
+        accessibilityLabel={`Palavra actual: ${word}`}
+        style={{
+          color: foreground,
+          fontSize: fontSize + 10,
+          fontWeight: '700',
+          textAlign: 'center',
+          backgroundColor: highlight,
+          overflow: 'hidden',
+          padding: 12,
+        }}>
         {word}
       </Text>
     );
   }
   const visible = mode === 'PROGRESSIVE' ? words.slice(0, Math.max(1, currentIndex + 1)) : words;
   return (
-    <Text style={{ color: foreground, fontSize, lineHeight: fontSize * 1.45 }}>
+    <Text style={{ color: foreground, fontSize, lineHeight: fontSize * 1.5, textAlign: 'center' }}>
       {visible.map((word, index) => {
         const active = index === currentIndex;
         return (
           <Text
             key={word.id || `${index}-${word.startChar}`}
-            style={active ? { backgroundColor: highlight, color: '#000000', fontWeight: '700' } : undefined}>
+            accessibilityLabel={active ? `Palavra actual: ${word.text}` : undefined}
+            style={
+              active
+                ? {
+                    backgroundColor: highlight,
+                    color: '#111111',
+                    fontWeight: '800',
+                    textDecorationLine: 'underline',
+                  }
+                : undefined
+            }>
             {word.text}
             {index < visible.length - 1 ? ' ' : ''}
           </Text>
@@ -198,16 +280,15 @@ function ReadingSurface({
       })}
     </Text>
   );
-}
+});
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  header: { padding: 16, gap: 12 },
-  title: { fontSize: 22, fontWeight: '700' },
+  pad: { paddingHorizontal: 12 },
   surface: { paddingHorizontal: 20, paddingBottom: 16, flexGrow: 1, justifyContent: 'center' },
-  controls: { padding: 16, gap: 12 },
+  controls: { padding: 12, gap: 10 },
   row: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   flex: { flex: 1 },
-  contrast: { flexDirection: 'row', alignItems: 'center' },
+  contrast: { flexDirection: 'row', alignItems: 'center', minHeight: 48 },
   err: { color: colors.danger },
 });
