@@ -28,6 +28,7 @@ export function AboutScreen({ onBack }: Props) {
         <Text style={styles.version}>
           Versão {version.versionName} ({version.versionCode})
         </Text>
+        <Text style={styles.version}>Versão experimental para testes escolares. Não é uma release de produção.</Text>
         <Card title="O que é">
           {PROJECT.name} é uma aplicação educativa, gratuita e integralmente offline. Permite acompanhar
           as palavras escritas através de narrações sincronizadas, em especial para alunos com

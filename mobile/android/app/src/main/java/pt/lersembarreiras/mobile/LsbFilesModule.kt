@@ -39,7 +39,7 @@ class LsbFilesModule(private val ctx: ReactApplicationContext) :
             info.versionCode
         }
         return mutableMapOf(
-            "versionName" to (info.versionName ?: "0.2.1"),
+            "versionName" to (info.versionName ?: "0.2.2-experimental"),
             "versionCode" to code,
         )
     }

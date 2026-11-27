@@ -16,7 +16,9 @@ O ONNX Runtime para Android 1.22 não implementa `ConvInteger` nem `MatMulIntege
 
 ## O que entra no APK
 
-A tarefa Gradle `fetchEbranchCtc` descarrega o grafo int8, os pesos e o vocabulário para `mobile/android/app/ctc-model/`. `stageEbranchCtcAssets` copia `model.onnx` e `model.int8.onnx.data` para os assets. Os pesos **não** vão para o Git. O vocabulário e a matriz mel do frontal w2v-BERT ficam em `mobile/android/app/src/main/assets/ctc/`.
+A tarefa Gradle `fetchEbranchCtc` descarrega o grafo int8, os pesos e o vocabulário para `mobile/android/app/ctc-model/`. `stageEbranchCtcAssets` copia `model.onnx` e `model.int8.onnx.data` para `build/generated/ctcAssets` (não para `src/main/assets`, para o lint do `assembleRelease` não tratar os pesos como saída implícita da árvore de fontes). Os pesos **não** vão para o Git. O vocabulário e a matriz mel do frontal w2v-BERT ficam em `mobile/android/app/src/main/assets/ctc/`.
+
+O APK de distribuição inclui `arm64-v8a` (tablet) e `x86_64` (emulador). `armeabi-v7a` e `x86` foram excluídos: duplicavam bibliotecas nativas sem benefício no HOTWAV TAB R9 Plus.
 
 Na primeira sincronização a app copia o grafo e o ficheiro `.data` para o armazenamento privado, lado a lado, para o ONNX Runtime os abrir. A app instalada não descarrega o modelo.
 
