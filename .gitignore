@@ -54,6 +54,7 @@ student-data/
 *.aac
 *.ogg
 !**/src/test/**/*.wav
+!**/src/androidTest/**/*.wav
 !**/src/test/resources/**
 
 # Secrets
