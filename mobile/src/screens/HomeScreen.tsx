@@ -14,8 +14,8 @@ type Props = {
 
 export function HomeScreen({ onTeacher, onStudent, onAbout }: Props) {
   const layout = useLayout();
-  const logo = split ? 112 : layout.isTablet ? 148 : 120;
   const split = layout.isLandscape;
+  const logo = split ? 112 : layout.isTablet ? 148 : 120;
   return (
     <ScreenShell scroll>
       <View style={[styles.container, layout.isLandscape && styles.landscape, split && styles.split]}>

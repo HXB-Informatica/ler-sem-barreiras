@@ -1,4 +1,5 @@
 import { emptyWordTiming, isReadyForStudent, type ReadingContent } from '../models';
+import { currentWordIndex } from '../timeValidator';
 
 function content(partial: Partial<ReadingContent>): ReadingContent {
   return {
@@ -33,6 +34,13 @@ function content(partial: Partial<ReadingContent>): ReadingContent {
     ...partial,
   };
 }
+
+describe('currentWordIndex gating', () => {
+  it('does not jump when time stays in the same word', () => {
+    const words = content({}).words;
+    expect(currentWordIndex(words, 10)).toBe(currentWordIndex(words, 80));
+  });
+});
 
 describe('isReadyForStudent', () => {
   it('keeps fully synchronized legacy content visible', () => {

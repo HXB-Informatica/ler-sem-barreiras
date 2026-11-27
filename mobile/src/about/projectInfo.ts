@@ -28,8 +28,8 @@ export const PROJECT = {
     'Os direitos de autor sobre o código pertencem aos respetivos autores e colaboradores, nos termos da GNU GPL v3.0. A responsabilidade pedagógica é da escola; o desenvolvimento técnico é da HXB. Não se presume cessão de direitos ainda não formalizada.',
   licenseName: 'GNU GPL v3.0',
   githubUrl: 'https://github.com/HXB-Informatica/ler-sem-barreiras',
-  fallbackVersionName: '0.2.2-experimental',
-  fallbackVersionCode: 3,
+  fallbackVersionName: '0.2.3-experimental',
+  fallbackVersionCode: 4,
   /**
    * Área configurável. Só mostrar entidades com approvedBySchool === true.
    * A correspondência refere a Sonae, mas a identificação não está aprovada

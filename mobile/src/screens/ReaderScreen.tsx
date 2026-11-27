@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { memo, useEffect, useRef, useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Switch, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { PresentationMode, ReadingContent } from '../core/models';
 import { currentWordIndex } from '../core/timeValidator';
@@ -23,8 +23,14 @@ export function ReaderScreen({ repository, contentId, onBack }: Props) {
   const [fontIndex, setFontIndex] = useState(1);
   const [highContrast, setHighContrast] = useState(false);
   const [playing, setPlaying] = useState(false);
-  const [positionMs, setPositionMs] = useState(0);
+  const [wordIndex, setWordIndex] = useState(-1);
   const [missingAudio, setMissingAudio] = useState(false);
+  const contentRef = useRef(content);
+  contentRef.current = content;
+  const wordIndexRef = useRef(-1);
+  const { width, height } = useWindowDimensions();
+  const isTablet = Math.min(width, height) >= 600;
+  const landscape = width > height;
 
   useEffect(() => {
     repository.get(contentId).then(item => {
@@ -45,7 +51,12 @@ export function ReaderScreen({ repository, contentId, onBack }: Props) {
     }
     const timer = setInterval(() => {
       audioBridge.status().then(status => {
-        setPositionMs(status.positionMs);
+        const item = contentRef.current;
+        const next = item ? currentWordIndex(item.words, status.positionMs) : -1;
+        if (next !== wordIndexRef.current) {
+          wordIndexRef.current = next;
+          setWordIndex(next);
+        }
         if (!status.playing) {
           setPlaying(false);
         }
@@ -53,11 +64,6 @@ export function ReaderScreen({ repository, contentId, onBack }: Props) {
     }, 80);
     return () => clearInterval(timer);
   }, [playing]);
-
-  const wordIndex = useMemo(
-    () => (content ? currentWordIndex(content.words, positionMs) : -1),
-    [content, positionMs],
-  );
 
   const foreground = highContrast ? colors.contrastFg : colors.text;
   const background = highContrast ? colors.contrastBg : colors.background;
@@ -89,7 +95,8 @@ export function ReaderScreen({ repository, contentId, onBack }: Props) {
     }
     await audioBridge.seek(0);
     await audioBridge.play(content.audioRelativePath);
-    setPositionMs(0);
+    wordIndexRef.current = 0;
+    setWordIndex(0);
     setPlaying(true);
   };
 
@@ -98,7 +105,12 @@ export function ReaderScreen({ repository, contentId, onBack }: Props) {
       <View style={styles.pad}>
         <AppHeader title={content?.title ?? 'Leitura'} onBack={onBack} />
       </View>
-      <ScrollView contentContainerStyle={styles.surface} accessibilityLiveRegion="polite">
+      <ScrollView
+        contentContainerStyle={[
+          styles.surface,
+          { paddingHorizontal: isTablet ? 40 : 20, maxWidth: landscape && isTablet ? 980 : undefined, alignSelf: 'center', width: '100%' },
+        ]}
+        accessibilityLiveRegion="polite">
         {content ? (
           <ReadingSurface
             content={content}
@@ -112,7 +124,7 @@ export function ReaderScreen({ repository, contentId, onBack }: Props) {
           <Text style={{ color: foreground }}>A carregar…</Text>
         )}
       </ScrollView>
-      <View style={styles.controls}>
+      <View style={[styles.controls, { maxWidth: isTablet ? 720 : undefined, alignSelf: 'center', width: '100%' }]}>
         <View style={styles.row}>
           <ModeChip
             label="Texto"
@@ -201,7 +213,7 @@ function ModeChip({
   );
 }
 
-function ReadingSurface({
+const ReadingSurface = memo(function ReadingSurface({
   content,
   mode,
   currentIndex,
@@ -268,7 +280,7 @@ function ReadingSurface({
       })}
     </Text>
   );
-}
+});
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },

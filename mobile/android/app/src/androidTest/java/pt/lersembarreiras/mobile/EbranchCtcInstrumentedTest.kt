@@ -16,16 +16,19 @@ class EbranchCtcInstrumentedTest {
         val app = InstrumentationRegistry.getInstrumentation().targetContext
         val installed = EbranchCtc.install(app.assets, listOf(File(app.filesDir, "ctc")))
         val engine = EbranchCtc(installed.first, installed.second, installed.third)
-
-        val samples = WavPcm.readMonoFloats16k(copyAsset("sample-record.wav"))
-        assertTrue("o WAV de teste está vazio", samples.isNotEmpty())
-        val simple = engine.recognize(samples)
-        android.util.Log.i(
-            "LsbCtcTest",
-            "elapsedMs=${System.currentTimeMillis() - started} words=${simple.size} text=${simple.joinToString(" ") { it.text }}",
-        )
-        assertTrue("o motor não devolveu palavras no áudio de teste", simple.isNotEmpty())
-        assertMonotonic(simple)
+        try {
+            val samples = WavPcm.readMonoFloats16k(copyAsset("sample-record.wav"))
+            assertTrue("o WAV de teste está vazio", samples.isNotEmpty())
+            val simple = engine.recognize(samples)
+            android.util.Log.i(
+                "LsbCtcTest",
+                "elapsedMs=${System.currentTimeMillis() - started} words=${simple.size} text=${simple.joinToString(" ") { it.text }}",
+            )
+            assertTrue("o motor não devolveu palavras no áudio de teste", simple.isNotEmpty())
+            assertMonotonic(simple)
+        } finally {
+            engine.close()
+        }
     }
 
     private fun assertMonotonic(words: List<HeardWord>) {

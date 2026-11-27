@@ -25,9 +25,17 @@ internal class EbranchCtc(
     private val session: OrtSession = environment.createSession(
         modelFile.absolutePath,
         OrtSession.SessionOptions().apply {
-            setIntraOpNumThreads(Runtime.getRuntime().availableProcessors().coerceIn(2, 4))
+            val cpus = Runtime.getRuntime().availableProcessors()
+            setIntraOpNumThreads(cpus.coerceIn(1, 2))
+            setInterOpNumThreads(1)
+            setMemoryPatternOptimization(true)
+            setOptimizationLevel(OrtSession.SessionOptions.OptLevel.ALL_OPT)
         },
     )
+
+    fun close() {
+        runCatching { session.close() }
+    }
 
     fun recognize(samples: FloatArray): List<HeardWord> {
         val features = W2vBertFeatures.extract(samples, mel)

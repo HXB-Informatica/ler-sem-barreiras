@@ -1,5 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  AppState,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { align } from '../core/alignmentEngine';
 import { LsbException } from '../core/lsbErrors';
 import {
@@ -159,6 +169,25 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
     ...overrides,
   });
 
+  const latest = useRef({ fingerprint, current, recording, syncing });
+  latest.current = { fingerprint, current, recording, syncing };
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', state => {
+      if (state !== 'background' && state !== 'inactive') {
+        return;
+      }
+      if (latest.current.recording || latest.current.syncing) {
+        return;
+      }
+      if (latest.current.fingerprint() === snapshot.current) {
+        return;
+      }
+      repository.save(latest.current.current({ availableToStudents: false })).catch(() => undefined);
+    });
+    return () => sub.remove();
+  }, [repository]);
+
   const persist = async (overrides: Partial<ReadingContent> = {}, audioBase64?: string | null) => {
     const stored = await repository.save(current(overrides), audioBase64);
     setHasAudio(Boolean(stored.audioRelativePath));
@@ -283,6 +312,9 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
   };
 
   const synchronize = async () => {
+    if (syncing || recording || busy.current) {
+      return;
+    }
     try {
       setSyncing(true);
       setError(null);
@@ -342,7 +374,7 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
   return (
     <ScreenShell>
       <AppHeader title="Preparar conteúdo" onBack={requestBack} />
-      <StepTabs step={step} onChange={setStep} />
+      <StepTabs step={step} onChange={setStep} disabled={syncing || recording} />
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.body}>
         {step === 1 ? (
           <View style={styles.block}>
@@ -405,7 +437,12 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
               onPress={synchronize}
               disabled={syncing || recording || !text.trim() || !hasAudio}
             />
-            {syncing ? <Text style={styles.hint}>A processar neste tablet. Não fecha a aplicação.</Text> : null}
+            {syncing ? (
+              <View style={styles.syncing} accessibilityLiveRegion="polite">
+                <ActivityIndicator size="large" color={colors.primary} />
+                <Text style={styles.hint}>A sincronizar neste tablet, sem internet. Pode demorar alguns minutos. Não feche a aplicação.</Text>
+              </View>
+            ) : null}
             {message ? <Text style={styles.ok}>{message}</Text> : null}
             {error && step === 3 ? <Text style={styles.err}>{error}</Text> : null}
             {words.length > 0 ? (
@@ -440,7 +477,11 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
                 <Button label={playing ? 'Pausar narração' : 'Ouvir narração'} onPress={togglePlayback} variant="secondary" />
               </View>
             ) : null}
-            <Button label="Continuar para guardar" onPress={() => setStep(4)} />
+            <Button
+              label="Continuar para guardar"
+              onPress={() => setStep(4)}
+              disabled={syncing || words.length === 0}
+            />
           </View>
         ) : null}
         {step === 4 ? (
@@ -527,7 +568,15 @@ function WordTimeRow({
   );
 }
 
-function StepTabs({ step, onChange }: { step: Step; onChange: (step: Step) => void }) {
+function StepTabs({
+  step,
+  onChange,
+  disabled,
+}: {
+  step: Step;
+  onChange: (step: Step) => void;
+  disabled?: boolean;
+}) {
   const items: { id: Step; label: string }[] = [
     { id: 1, label: 'Texto' },
     { id: 2, label: 'Narração' },
@@ -541,8 +590,13 @@ function StepTabs({ step, onChange }: { step: Step; onChange: (step: Step) => vo
         return (
           <Pressable
             key={item.id}
-            onPress={() => onChange(item.id)}
-            style={[styles.step, active ? styles.stepActive : null]}
+            onPress={() => {
+              if (!disabled) {
+                onChange(item.id);
+              }
+            }}
+            disabled={disabled}
+            style={[styles.step, active ? styles.stepActive : null, disabled ? styles.stepDisabled : null]}
             accessibilityRole="tab"
             accessibilityState={{ selected: active }}
             accessibilityLabel={`Etapa ${item.id}, ${item.label}${active ? ', actual' : ''}`}>
@@ -571,7 +625,7 @@ const styles = StyleSheet.create({
   body: { paddingBottom: 40, gap: 12 },
   block: { gap: 12 },
   split: { flexDirection: 'row', gap: 16, alignItems: 'flex-start' },
-  flex: { flex: 1, gap: 0 },
+  flex: { flex: 1, gap: 10, minWidth: 0 },
   label: { color: colors.muted, fontWeight: '700' },
   input: {
     backgroundColor: colors.surface,
@@ -621,6 +675,8 @@ const styles = StyleSheet.create({
   stepActive: {
     backgroundColor: colors.primary,
   },
+  stepDisabled: { opacity: 0.55 },
+  syncing: { gap: 12, alignItems: 'center', paddingVertical: 12 },
   stepIndex: {
     fontSize: 16,
     fontWeight: '800',

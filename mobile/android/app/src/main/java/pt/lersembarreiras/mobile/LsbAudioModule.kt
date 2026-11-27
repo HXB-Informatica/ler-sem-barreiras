@@ -85,11 +85,20 @@ class LsbAudioModule(private val ctx: ReactApplicationContext) : ReactContextBas
             val file: File
             synchronized(stateLock) {
                 stopPlayer()
-                if (recording.get() || recorder != null || hostSocket != null) {
+                if (recording.get()) {
+                    promise.reject("AUDIO", "Já está a gravar neste tablet.")
+                    return
+                }
+                if (recorder != null || hostSocket != null) {
                     finishWriterLocked()
                 }
                 file = PathSafety.resolve(root(), path)
                 file.parentFile?.mkdirs()
+                val freeBytes = file.parentFile?.usableSpace ?: 0
+                if (freeBytes in 1 until 4_000_000L) {
+                    promise.reject("AUDIO", "Não há espaço suficiente neste tablet para gravar.")
+                    return
+                }
                 if (startHostMicrophone(file)) {
                     promise.resolve(null)
                     return

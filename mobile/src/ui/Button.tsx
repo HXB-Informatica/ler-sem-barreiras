@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
 import { colors, radii } from '../theme';
+import { useLayout } from './layout';
 
 type Props = {
   label: string;
@@ -10,6 +11,8 @@ type Props = {
 };
 
 export function Button({ label, onPress, disabled, accessibilityLabel, variant = 'primary' }: Props) {
+  const layout = useLayout();
+  const minHeight = layout.isTablet ? 64 : 56;
   const background =
     variant === 'secondary'
       ? colors.secondary
@@ -32,7 +35,7 @@ export function Button({ label, onPress, disabled, accessibilityLabel, variant =
       onPress={onPress}
       style={[
         styles.button,
-        { backgroundColor: background, opacity: disabled ? 0.5 : 1 },
+        { backgroundColor: background, opacity: disabled ? 0.5 : 1, minHeight },
         variant === 'ghost' ? styles.ghost : null,
       ]}>
       <Text style={[styles.label, { color }]}>{label}</Text>

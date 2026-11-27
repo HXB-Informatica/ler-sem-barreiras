@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { LsbException } from '../core/lsbErrors';
 import { isReadyForStudent, type ReadingContent } from '../core/models';
-import { pickFile, unzipWhitelisted } from '../native/bridge';
+import { pickFile, unzipWhitelisted, warmupSpeech } from '../native/bridge';
 import type { ContentRepository } from '../storage/contentRepository';
 import { colors, type } from '../theme';
 import { AppHeader } from '../ui/AppHeader';
@@ -31,6 +31,10 @@ export function TeacherListScreen({ repository, onBack, onCreate, onOpen, onAbou
   useEffect(() => {
     reload().catch(error => Alert.alert('Erro', messageOf(error)));
   }, [reload]);
+
+  useEffect(() => {
+    warmupSpeech().catch(() => undefined);
+  }, []);
 
   const importLsb = async () => {
     try {

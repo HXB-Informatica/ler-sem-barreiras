@@ -21,6 +21,8 @@ class MainApplication : Application(), ReactApplication {
 
   override fun onCreate() {
     super.onCreate()
+    LsbDiag.mark("app_onCreate", mapOf("memMb" to LsbDiag.memoryMb(this), "heapMb" to LsbDiag.javaHeapMb()))
     loadReactNative(this)
+    LsbDiag.persist(this)
   }
 }

@@ -1,4 +1,4 @@
-# Ler sem Barreiras — app móvel (v0.2.2 experimental)
+# Ler sem Barreiras — app móvel (v0.2.3 experimental)
 
 Aplicação React Native (TypeScript) para Android. Substitui a linha Kotlin 0.1.x no desenvolvimento activo.
 

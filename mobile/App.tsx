@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { StatusBar } from 'react-native';
+import { markEnd, markStart } from './src/diag/perf';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AboutScreen } from './src/screens/AboutScreen';
 import { HomeScreen } from './src/screens/HomeScreen';
@@ -21,7 +22,12 @@ type AppRoute =
 
 type Route = AppRoute | { name: 'about'; back: AppRoute };
 
+markStart('js_ready');
+
 function App() {
+  useEffect(() => {
+    markEnd('js_ready');
+  }, []);
   const repository = useMemo(
     () =>
       new ContentRepository(
