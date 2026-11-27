@@ -55,6 +55,7 @@ fun AppNav() {
                 onBack = { navController.popBackStack() },
                 onCreate = { navController.navigate("teacher/edit/new") },
                 onOpen = { id -> navController.navigate("teacher/edit/$id") },
+                onAbout = { navController.navigate("about") },
                 pendingImportUri = pending,
                 onPendingImportConsumed = { container.pendingLsbUri.value = null },
             )
@@ -99,6 +100,7 @@ fun AppNav() {
                 viewModel = vm,
                 onBack = { navController.popBackStack() },
                 onOpen = { id -> navController.navigate("reader/$id") },
+                onAbout = { navController.navigate("about") },
             )
         }
         composable(

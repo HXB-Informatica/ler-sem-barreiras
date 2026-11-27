@@ -28,6 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -54,6 +55,7 @@ fun ReaderListScreen(
     viewModel: ReaderListViewModel,
     onBack: () -> Unit,
     onOpen: (String) -> Unit,
+    onAbout: () -> Unit = {},
 ) {
     val contents by viewModel.contents.collectAsStateWithLifecycle()
     Scaffold(
@@ -64,6 +66,9 @@ fun ReaderListScreen(
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
                     }
+                },
+                actions = {
+                    TextButton(onClick = onAbout) { Text("Sobre o projeto") }
                 },
             )
         },
@@ -107,7 +112,7 @@ fun ReaderScreen(
     val contrast = state.settings.highContrast
     val background = if (contrast) Color.Black else MaterialTheme.colorScheme.background
     val foreground = if (contrast) Color.White else MaterialTheme.colorScheme.onBackground
-    val highlight = if (contrast) Color.Yellow else Color(0xFFFFF176)
+    val highlight = if (contrast) Color.Yellow else Color(0xFFFFC24D)
     val highlightText = if (contrast) Color.Black else Color.Black
 
     Scaffold(

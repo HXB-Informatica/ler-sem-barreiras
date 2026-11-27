@@ -11,6 +11,10 @@ Aplicação Android educativa, gratuita e **integralmente offline**, para sincro
 
 O projeto pertence à iniciativa da escola. A HXB é identificada como parceiro tecnológico e não reivindica titularidade exclusiva. Os direitos de autor sobre o código pertencem aos respetivos autores e colaboradores, nos termos da [GNU General Public License v3.0](LICENSE) (`GPL-3.0-only`). Não se presume qualquer cessão de direitos ainda não formalizada.
 
+## Identidade visual
+
+Paleta, ícone de lançador (clássico e adaptativo) e ecrã **Sobre o projeto** estão descritos em [docs/branding/README.md](docs/branding/README.md). A página Sobre funciona offline e só lista apoiantes aprovados pela escola.
+
 ## Princípios
 
 - Gratuita para qualquer escola, instituição ou utilizador.

@@ -60,7 +60,7 @@ export function ReaderScreen({ repository, contentId, onBack }: Props) {
 
   const foreground = highContrast ? colors.contrastFg : colors.text;
   const background = highContrast ? colors.contrastBg : colors.background;
-  const highlight = highContrast ? colors.contrastHighlight : colors.highlight;
+  const highlight = highContrast ? colors.contrastHighlight : colors.yellow;
   const fontSize = 22 * FONT_STEPS[fontIndex];
 
   const play = async () => {

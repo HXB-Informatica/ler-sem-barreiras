@@ -249,6 +249,9 @@ export function TeacherEditScreen({ repository, contentId, onBack }: Props) {
       <ScrollView contentContainerStyle={styles.body}>
         <Button label="Voltar" onPress={onBack} variant="secondary" />
         <Text style={styles.title}>Preparar conteúdo</Text>
+        <Text style={styles.hint}>
+          Título, texto, narração e sincronização ficam neste tablet. Nada é enviado para a internet.
+        </Text>
         <Text style={styles.label}>Título</Text>
         <TextInput value={title} onChangeText={setTitle} style={styles.input} accessibilityLabel="Título" />
         <Text style={styles.label}>Texto para os alunos</Text>
@@ -327,6 +330,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   body: { padding: 16, gap: 12, paddingBottom: 48 },
   title: { fontSize: 24, fontWeight: '700', color: colors.text },
+  hint: { fontSize: 15, lineHeight: 22, color: colors.muted },
   label: { color: colors.muted, fontWeight: '600' },
   input: {
     backgroundColor: colors.surface,

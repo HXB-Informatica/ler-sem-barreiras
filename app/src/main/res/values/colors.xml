@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="lsb_primary">#0E5CA8</color>
+    <color name="lsb_primary_deep">#0B4F8F</color>
+    <color name="lsb_teal">#0FAF9F</color>
+    <color name="lsb_sky">#A9D8F7</color>
+    <color name="lsb_yellow">#FFC24D</color>
+    <color name="lsb_purple">#8B6BD9</color>
+    <color name="lsb_text">#1F2937</color>
+    <color name="lsb_background">#F7FAFC</color>
+    <color name="lsb_icon_blue">#0B4F8F</color>
+</resources>

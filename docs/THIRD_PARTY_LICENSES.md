@@ -36,6 +36,10 @@ Distribuídos pela Google e JetBrains sob as licenças Apache 2.0 aplicáveis a 
 - Voz europeia `pt_PT-tugão-medium` em [rhasspy/piper-voices](https://huggingface.co/rhasspy/piper-voices): MIT no repositório de vozes; gravações da voz CC0; o modelo foi afinado a partir de Hi-Fi TTS (CC BY 4.0), o que implica atribuição se essa voz for redistribuída
 - **Não** é incluída na aplicação dos alunos. O laboratório usa PCM sintético por omissão.
 
+## Identidade visual
+
+O ícone aprovado e a paleta são originais do projeto (Escola Gil Vicente / HXB). Não se redistribuem logótipos de terceiros. Nunito não foi incluída por falta de ficheiro de fonte com licença no repositório; a app usa a tipografia do sistema.
+
 ## Contributor Covenant
 
 O código de conduta adapta o Contributor Covenant 2.1, disponível para utilização nos termos do próprio projeto Contributor Covenant.

@@ -41,6 +41,7 @@ O APK fica em `mobile/android/app/build/outputs/apk/debug/`.
 
 - Modo Professor: criar texto, gravar WAV PCM 16 kHz, importar áudio WAV, importar `.lsb`, guardar localmente
 - Modo Aluno: três modos de leitura, letra, contraste, destaque pela posição do leitor
+- Ecrã Sobre o projeto (offline), com versão lida do APK e lista de apoiantes vazia até aprovação da escola
 - Alinhador TypeScript (Needleman–Wunsch, lacunas curtas, validador de intervalos) com testes
 - Módulos nativos Android: ficheiros, ZIP `.lsb`, áudio
 - Sincronização automática local com o EBranch-w2vBERT2-EP (cabeça CTC, ONNX int8), empacotado no APK

@@ -3,16 +3,17 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { ReadingContent } from '../core/models';
 import type { ContentRepository } from '../storage/contentRepository';
-import { colors } from '../theme';
-import { Button } from '../ui/Button';
+import { colors, radii, type } from '../theme';
+import { ScreenHeader } from '../ui/ScreenHeader';
 
 type Props = {
   repository: ContentRepository;
   onBack: () => void;
   onOpen: (id: string) => void;
+  onAbout: () => void;
 };
 
-export function ReaderListScreen({ repository, onBack, onOpen }: Props) {
+export function ReaderListScreen({ repository, onBack, onOpen, onAbout }: Props) {
   const [contents, setContents] = useState<ReadingContent[]>([]);
 
   const reload = useCallback(async () => {
@@ -25,10 +26,7 @@ export function ReaderListScreen({ repository, onBack, onOpen }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <Button label="Voltar" onPress={onBack} variant="secondary" />
-        <Text style={styles.title}>Modo Aluno</Text>
-      </View>
+      <ScreenHeader title="Modo Aluno" onBack={onBack} onAbout={onAbout} />
       {contents.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyTitle}>Ainda não há textos prontos a ler.</Text>
@@ -58,13 +56,17 @@ export function ReaderListScreen({ repository, onBack, onOpen }: Props) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
-  header: { padding: 16, gap: 12 },
-  title: { fontSize: 24, fontWeight: '700', color: colors.text },
   empty: { flex: 1, justifyContent: 'center', padding: 24, gap: 12 },
-  emptyTitle: { fontSize: 22, fontWeight: '700', textAlign: 'center', color: colors.text },
-  lead: { fontSize: 16, textAlign: 'center', color: colors.muted },
+  emptyTitle: { ...type.heading, textAlign: 'center' },
+  lead: { ...type.body, textAlign: 'center', color: colors.muted },
   list: { padding: 16, gap: 12 },
-  card: { backgroundColor: colors.surface, borderRadius: 12, padding: 20 },
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    padding: 22,
+    borderLeftWidth: 6,
+    borderLeftColor: colors.studentAccent,
+  },
   cardTitle: { fontSize: 22, fontWeight: '700', color: colors.text },
   meta: { marginTop: 6, color: colors.muted, fontSize: 16 },
 });

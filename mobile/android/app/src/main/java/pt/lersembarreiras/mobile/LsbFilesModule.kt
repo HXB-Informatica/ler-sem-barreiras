@@ -2,6 +2,7 @@ package pt.lersembarreiras.mobile
 
 import android.app.Activity
 import android.content.Intent
+import android.os.Build
 import android.util.Base64
 import com.facebook.react.bridge.ActivityEventListener
 import com.facebook.react.bridge.Arguments
@@ -28,6 +29,20 @@ class LsbFilesModule(private val ctx: ReactApplicationContext) :
     }
 
     override fun getName(): String = "LsbFiles"
+
+    override fun getConstants(): MutableMap<String, Any> {
+        val info = ctx.packageManager.getPackageInfo(ctx.packageName, 0)
+        val code = if (Build.VERSION.SDK_INT >= 28) {
+            info.longVersionCode.toInt()
+        } else {
+            @Suppress("DEPRECATION")
+            info.versionCode
+        }
+        return mutableMapOf(
+            "versionName" to (info.versionName ?: "0.2.0"),
+            "versionCode" to code,
+        )
+    }
 
     private fun root(): File = File(ctx.filesDir, "lsb").apply { mkdirs() }
 

@@ -4,5 +4,7 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowBackground">@drawable/lsb_splash</item>
+        <item name="android:colorPrimary">@color/lsb_primary</item>
     </style>
 </resources>

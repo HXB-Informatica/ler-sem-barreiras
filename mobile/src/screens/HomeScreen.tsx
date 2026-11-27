@@ -1,7 +1,9 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { PROJECT } from '../about/projectInfo';
+import { colors, spacing, type } from '../theme';
+import { BrandMark } from '../ui/BrandMark';
 import { Button } from '../ui/Button';
-import { colors } from '../theme';
 
 type Props = {
   onTeacher: () => void;
@@ -12,35 +14,53 @@ type Props = {
 export function HomeScreen({ onTeacher, onStudent, onAbout }: Props) {
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.container}>
-        <Text style={styles.title}>Ler sem Barreiras</Text>
-        <Text style={styles.lead}>
-          Textos e narração sincronizados, no próprio tablet, sem internet.
+      <ScrollView contentContainerStyle={styles.container}>
+        <BrandMark size={128} />
+        <Text style={styles.title} accessibilityRole="header">
+          {PROJECT.name}
         </Text>
-        <Button label="Modo Professor" onPress={onTeacher} accessibilityLabel="Abrir modo professor" />
+        <Text style={styles.lead}>{PROJECT.tagline}</Text>
+        <Button
+          label="Modo Aluno"
+          variant="student"
+          onPress={onStudent}
+          accessibilityLabel="Abrir modo aluno, para ler e ouvir textos"
+        />
         <View style={styles.gap} />
-        <Button label="Modo Aluno" onPress={onStudent} accessibilityLabel="Abrir modo aluno" />
-        <View style={styles.gap} />
-        <Button label="Sobre o projeto" onPress={onAbout} variant="secondary" />
-        <Text style={styles.footer}>Escola Gil Vicente  ·  HXB, parceiro tecnológico</Text>
-        <Text style={styles.version}>versão 0.2.0 — React Native</Text>
-      </View>
+        <Button
+          label="Modo Professor"
+          variant="teacher"
+          onPress={onTeacher}
+          accessibilityLabel="Abrir modo professor, para criar e gerir conteúdos"
+        />
+        <View style={styles.gapWide} />
+        <Button label="Sobre o projeto" onPress={onAbout} variant="ghost" />
+        <Text style={styles.footer}>
+          {PROJECT.schoolShort} · {PROJECT.schoolRole}
+        </Text>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
-  container: { flex: 1, justifyContent: 'center', paddingHorizontal: 28 },
-  title: { fontSize: 28, fontWeight: '700', textAlign: 'center', color: colors.text },
+  container: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 28,
+    paddingVertical: spacing.xl,
+    gap: 4,
+  },
+  title: { ...type.title, textAlign: 'center', marginTop: spacing.md },
   lead: {
-    fontSize: 18,
+    ...type.body,
     textAlign: 'center',
     color: colors.muted,
     marginTop: 12,
     marginBottom: 36,
   },
   gap: { height: 16 },
-  footer: { marginTop: 28, textAlign: 'center', color: colors.muted },
-  version: { marginTop: 8, textAlign: 'center', color: colors.muted, fontSize: 12 },
+  gapWide: { height: 28 },
+  footer: { marginTop: 28, textAlign: 'center', color: colors.muted, fontSize: 15, lineHeight: 22 },
 });

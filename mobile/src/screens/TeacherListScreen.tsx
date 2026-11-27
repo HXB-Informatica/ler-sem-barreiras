@@ -2,21 +2,23 @@ import { useCallback, useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LsbException } from '../core/lsbErrors';
-import { syncLabel } from '../core/lsb';
 import type { ReadingContent } from '../core/models';
 import { pickFile, unzipWhitelisted } from '../native/bridge';
 import type { ContentRepository } from '../storage/contentRepository';
-import { colors } from '../theme';
+import { colors, radii, type } from '../theme';
 import { Button } from '../ui/Button';
+import { ScreenHeader } from '../ui/ScreenHeader';
+import { StatusChip } from '../ui/StatusChip';
 
 type Props = {
   repository: ContentRepository;
   onBack: () => void;
   onCreate: () => void;
   onOpen: (id: string) => void;
+  onAbout: () => void;
 };
 
-export function TeacherListScreen({ repository, onBack, onCreate, onOpen }: Props) {
+export function TeacherListScreen({ repository, onBack, onCreate, onOpen, onAbout }: Props) {
   const [contents, setContents] = useState<ReadingContent[]>([]);
   const [busy, setBusy] = useState(false);
 
@@ -70,11 +72,20 @@ export function TeacherListScreen({ repository, onBack, onCreate, onOpen }: Prop
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <Button label="Voltar" onPress={onBack} variant="secondary" />
-        <Text style={styles.title}>Modo Professor</Text>
-        <Button label="Importar .lsb" onPress={importLsb} disabled={busy} accessibilityLabel="Importar exercício .lsb" />
-      </View>
+      <ScreenHeader
+        title="Modo Professor"
+        onBack={onBack}
+        onAbout={onAbout}
+        extra={
+          <Button
+            label="Importar .lsb"
+            onPress={importLsb}
+            disabled={busy}
+            accessibilityLabel="Importar exercício .lsb"
+            variant="secondary"
+          />
+        }
+      />
       {contents.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyTitle}>Ainda não existem conteúdos neste tablet.</Text>
@@ -91,14 +102,14 @@ export function TeacherListScreen({ repository, onBack, onCreate, onOpen }: Prop
               key={item.id}
               onPress={() => onOpen(item.id)}
               accessibilityRole="button"
-              accessibilityLabel={`Abrir ${item.title}`}
+              accessibilityLabel={`Abrir ${item.title}, ${item.syncStatus}`}
               style={styles.card}>
               <View style={styles.cardBody}>
                 <Text style={styles.cardTitle}>{item.title}</Text>
+                <StatusChip status={item.syncStatus} />
                 <Text style={styles.meta}>
                   {item.audioRelativePath ? `Narração ${formatDuration(item.durationMs)}` : 'Sem narração'}
                 </Text>
-                <Text style={styles.meta}>{syncLabel(item.syncStatus)}</Text>
                 <Text style={styles.meta}>{formatDate(item.updatedAtEpochMs)}</Text>
               </View>
               <Button label="Eliminar" variant="danger" onPress={() => remove(item)} accessibilityLabel={`Eliminar ${item.title}`} />
@@ -134,19 +145,19 @@ function messageOf(error: unknown): string {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
-  header: { padding: 16, gap: 12 },
-  title: { fontSize: 24, fontWeight: '700', color: colors.text },
   empty: { flex: 1, justifyContent: 'center', padding: 24, gap: 16 },
-  emptyTitle: { fontSize: 22, fontWeight: '700', color: colors.text, textAlign: 'center' },
-  lead: { fontSize: 16, color: colors.muted, textAlign: 'center' },
+  emptyTitle: { ...type.heading, textAlign: 'center' },
+  lead: { ...type.body, textAlign: 'center', color: colors.muted },
   list: { padding: 16, gap: 12, paddingBottom: 40 },
   card: {
     backgroundColor: colors.surface,
-    borderRadius: 12,
+    borderRadius: radii.md,
     padding: 16,
     gap: 12,
+    borderLeftWidth: 6,
+    borderLeftColor: colors.teacherAccent,
   },
-  cardBody: { gap: 4 },
+  cardBody: { gap: 8 },
   cardTitle: { fontSize: 20, fontWeight: '700', color: colors.text },
-  meta: { color: colors.muted },
+  meta: { color: colors.muted, fontSize: 15 },
 });
